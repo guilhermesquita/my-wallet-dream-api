@@ -1,5 +1,105 @@
 ## Api MyWalletDream
 
+generate Hash
+```ts
+export class UserBusiness {
+    constructor(
+        private userDatabase: UserDatabase,
+        private idGenerator: IdGenerator,
+				private tokenManager: TokenManager,
+				private hashManager: HashManager
+    ) {}
+    
+    public signup = async (
+			input: CreateUserInputDTO
+		): Promise<CreateUserOutputDTO> => {
+        
+				// validações de regra de negócio
+				
+				// geração da id
+        const id = this.idGenerator.generate()
+
+				// hash gerado a partir da senha do body
+				const hashedPassword = await this.hashManager.hash(password)
+
+        // imaginando q User tem id, name, email, password e createdAt
+        const newUser = new User(
+            id,
+            input.email,
+            hashedPassword, // usamos a senha hasheada em vez da senha plaintext
+            new Date().toISOString()
+        )
+
+        // continuação da lógica de criação de user (salvando o hash no banco de dados)
+    }
+}
+```
+
+compare Hash
+```ts
+export class UserBusiness {
+  constructor(
+    private userDatabase: UserDatabase,
+    private idGenerator: IdGenerator,
+    private tokenManager: TokenManager,
+		private hashManager: HashManager
+  ) { }
+
+  public login = async (
+    input: LoginInputDTO
+  ): Promise<LoginOutputDTO> => {
+    const { email, password } = input
+
+    const userDB = await this.userDatabase.findUserByEmail(email)
+
+    if (!userDB) {
+      throw new NotFoundError("'email' não encontrado")
+    }
+
+    // if (password !== userDB.password) {
+    //   throw new BadRequestError("'email' ou 'password' incorretos")
+    // }
+
+		// o password hasheado está no banco de dados
+		const hashedPassword = userDB.password
+
+		// o serviço hashManager analisa o password do body (plaintext) e o hash
+		const isPasswordCorrect = await this.hashManager.compare(password, hashedPassword)
+
+		// validamos o resultado
+		if (!isPasswordCorrect) {
+      throw new BadRequestError("'email' ou 'password' incorretos")
+    }
+
+    const user = new User(
+      userDB.id,
+      userDB.name,
+      userDB.email,
+      userDB.password,
+      userDB.role,
+      userDB.created_at
+    )
+
+    const payload: TokenPayload = {
+      id: user.getId(),
+      name: user.getName(),
+      role: user.getRole()
+    }
+
+    const token = this.tokenManager.createToken(payload)
+
+    const output: LoginOutputDTO = {
+      message: "Login realizado com sucesso",
+      token
+    }
+
+    return output
+  }
+
+	// outros endpoints
+}
+```
+
 <!-- # Projeto teste
 Projeto incentivado pela WatchBR
 

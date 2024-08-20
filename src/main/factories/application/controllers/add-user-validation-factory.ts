@@ -4,9 +4,12 @@ import * as yup from 'yup'
 
 export const makeAddUserValidation = (): Validation => {
   const schema = yup.object().shape({
-    name: yup.string().required(),
+    // name: yup.string().required(),
     email: yup.string().email().required(),
-    password: yup.string().required().min(4, 'Password must be greater than 3 caracters'),
+    password: yup
+      .string()
+      .required()
+      .min(4, 'Password must be greater than 3 caracters')
   })
 
   return new RequiredFieldYupValidation(schema)

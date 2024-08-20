@@ -1,257 +1,305 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PgConnection } from './helpers/connection'
-import { AddUser, Authenticate, CheckUserByEmail, 
-    EditUser, ListUserByEmail, 
-    ListUserById, ListUserPageable, 
-    RemoveUser, 
-    ResetUserPassword} from '@/domain/contracts/repos'
+import {
+  AddUser,
+  Authenticate,
+  CheckUserByEmail,
+  EditUser,
+  ListUserByEmail,
+  ListUserById,
+  ListUserPageable,
+  RemoveUser,
+  ResetUserPassword
+} from '@/domain/contracts/repos'
 import { PgUser } from './entities'
-import { JwtTokenHandler } from '@/infra/gateways'
-import { User } from '@/domain/entities';
-import { HttpResponse } from '@/application/contracts';
+import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
+import { User } from '@/domain/entities'
+import { HttpResponse } from '@/application/contracts'
+import { HashManager } from '@/infra/gateways/hash-manager'
 
-export class PgUserRepository implements
-    AddUser,
-    Authenticate,
-    ListUserById,
-    EditUser,
-    RemoveUser,
-    CheckUserByEmail,
-    ListUserPageable,
-    ListUserByEmail,
-    ResetUserPassword {
-    async add(user: AddUser.Params): Promise<AddUser.Result> {
-        const pgUserRepo = new PgUser();
-        pgUserRepo.nm_user = user.name;
-        pgUserRepo.email_user = user.email;
-        pgUserRepo.password_user = user.password;
+export class PgUserRepository implements AddUser, CheckUserByEmail {
+  // Authenticate,
+  // ListUserById,
+  // EditUser,
+  // RemoveUser,
+  // ListUserPageable,
+  // ListUserByEmail,
+  // ResetUserPassword
+  async add(user: AddUser.Params): Promise<AddUser.Result> {
+    const pgUserRepo = new PgUser()
 
-        const entityManager = PgConnection.getInstance().connect().createEntityManager()
+    const uuuid = new UuidGenerator()
+    const id = uuuid.generate()
 
-        await entityManager.transaction(async manager => {
-            let saved = await manager.save(PgUser, pgUserRepo);
-            await manager.save(saved)
-        })
+    pgUserRepo.id_user = id
+    pgUserRepo.email_user = user.email_user
+    pgUserRepo.email_confirmed = user.emailConfirmed
 
-        const token = new JwtTokenHandler()
+    const hashManager = new HashManager()
+    const hashedPasword = await hashManager.hash(user.encrypted_password)
 
-        const jwtToken = await token.generate({
-            expirationInMs: 8 * 60 * 60 * 1000,
-            key: pgUserRepo.id_user as string
-        })
+    pgUserRepo.encripyted_password_user = hashedPasword
 
-        return {
-            id: pgUserRepo.id_user as number,
-            statusCode: 201,
-            token: jwtToken,
-            message: 'Usuário cadastrado com sucesso'
-        }
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      const saved = await manager.save(PgUser, pgUserRepo)
+      await manager.save(saved)
+    })
+
+    const token = new JwtTokenHandler()
+
+    const jwtToken = await token.generate({
+      expirationInMs: 8 * 60 * 60 * 1000,
+      key: pgUserRepo.id_user
+    })
+
+    return {
+      id: pgUserRepo.id_user,
+      statusCode: 201,
+      token: jwtToken,
+      message: 'Usuário cadastrado com sucesso'
     }
-    async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+  }
 
-        let idExists: boolean | PgUser = false
+  async check(email: string): Promise<boolean> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
 
-        const idFind = await pgUserRepo.findOne({
-            where: {
-                id_user: user.id
-            }
-        }) as unknown as PgUser
+    let exists: boolean
 
-        idFind ? idExists = idFind : idExists = false
+    const userPg = (await pgUserRepo.findOne({
+      where: {
+        email_user: email
+      }
+    })) as unknown as PgUser
 
-        return idExists as User
-    }
+    !userPg ? (exists = false) : (exists = true)
 
-    async auth(params: Authenticate.Params): Promise<Authenticate.Result | boolean> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+    return exists
+  }
+  //   async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
+  //     let idExists: boolean | PgUser = false
 
-        const userPg = await pgUserRepo.findOne({
-            where: {
-                email_user: params.email,
-                password_user: params.password
-            }
-        }) as unknown as PgUser
+  //     const idFind = (await pgUserRepo.findOne({
+  //       where: {
+  //         id_user: user.id
+  //       }
+  //     })) as unknown as PgUser
 
-        if (!userPg) {
-            return false
-        }
+  //     idFind ? (idExists = idFind) : (idExists = false)
 
-        const token = new JwtTokenHandler()
+  //     return idExists as User
+  //   }
 
-        const jwtToken = await token.generate({
-            expirationInMs: 8 * 60 * 60 * 1000,
-            key: userPg.id_user as string
-        })
+  //   async auth(
+  //     params: Authenticate.Params
+  //   ): Promise<Authenticate.Result | boolean> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-        return {
-            id: userPg.id_user as number,
-            email: userPg.email_user,
-            token: jwtToken
-        }
-    }
+  //     const userPg = (await pgUserRepo.findOne({
+  //       where: {
+  //         email_user: params.email,
+  //         password_user: params.password
+  //       }
+  //     })) as unknown as PgUser
 
-    async edit(user: EditUser.Params): Promise<EditUser.Result> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+  //     if (!userPg) {
+  //       return false
+  //     }
 
-        const userToEdit = await pgUserRepo.findOne({
-            where: {
-                id_user: user.id
-            }
-        }) as unknown as PgUser
+  //     const token = new JwtTokenHandler()
 
-        userToEdit.nm_user = user.name || userToEdit.nm_user
-        userToEdit.email_user = user.email || userToEdit.email_user
-        userToEdit.password_user = user.password || userToEdit.password_user
+  //     const jwtToken = await token.generate({
+  //       expirationInMs: 8 * 60 * 60 * 1000,
+  //       key: userPg.id_user as string
+  //     })
 
-        const entityManager = PgConnection.getInstance().connect().createEntityManager()
+  //     return {
+  //       id: userPg.id_user as number,
+  //       email: userPg.email_user,
+  //       token: jwtToken
+  //     }
+  //   }
 
-        await entityManager.transaction(async manager => {
-            const saved = await manager.save(PgUser, userToEdit);
-            await manager.save(saved)
-        })
+  //   async edit(user: EditUser.Params): Promise<EditUser.Result> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-        return {
-            id: userToEdit.id_user as number,
-            statusCode: 201,
-            message: 'Usuário editado com sucesso'
-        }
-    }
+  //     const userToEdit = (await pgUserRepo.findOne({
+  //       where: {
+  //         id_user: user.id
+  //       }
+  //     })) as unknown as PgUser
 
-    async remove(user: RemoveUser.Params): Promise<RemoveUser.Result> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser);
+  //     userToEdit.nm_user = user.name || userToEdit.nm_user
+  //     userToEdit.email_user = user.email || userToEdit.email_user
+  //     userToEdit.password_user = user.password || userToEdit.password_user
 
-        const userToDelete = await pgUserRepo.findOne({
-            where: {
-                id_user: user.id
-            }
-        }) as unknown as PgUser;
+  //     const entityManager = PgConnection.getInstance()
+  //       .connect()
+  //       .createEntityManager()
 
-        const entityManager = PgConnection.getInstance().connect().createEntityManager();
+  //     await entityManager.transaction(async manager => {
+  //       const saved = await manager.save(PgUser, userToEdit)
+  //       await manager.save(saved)
+  //     })
 
-        await entityManager.transaction(async manager => {
-            await manager.remove(PgUser, userToDelete);
-        });
+  //     return {
+  //       id: userToEdit.id_user as number,
+  //       statusCode: 201,
+  //       message: 'Usuário editado com sucesso'
+  //     }
+  //   }
 
-        return {
-            id: user.id,
-            statusCode: 200,
-            message: 'Usuário deletado com sucesso'
-        }
-    }
+  //   async remove(user: RemoveUser.Params): Promise<RemoveUser.Result> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-    async check(email: string): Promise<boolean> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+  //     const userToDelete = (await pgUserRepo.findOne({
+  //       where: {
+  //         id_user: user.id
+  //       }
+  //     })) as unknown as PgUser
 
-        let exists: boolean
+  //     const entityManager = PgConnection.getInstance()
+  //       .connect()
+  //       .createEntityManager()
 
-        const userPg = await pgUserRepo.findOne({
-            where: {
-                email_user: email,
-            }
-        }) as unknown as PgUser
+  //     await entityManager.transaction(async manager => {
+  //       await manager.remove(PgUser, userToDelete)
+  //     })
 
-        !userPg ? exists = false : exists = true
+  //     return {
+  //       id: user.id,
+  //       statusCode: 200,
+  //       message: 'Usuário deletado com sucesso'
+  //     }
+  //   }
 
-        return exists
-    };
+  //   async check(email: string): Promise<boolean> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-    async listPageable(data: ListUserPageable.Params): Promise<ListUserPageable.Result> {
-        const { pageable, filter } = data
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
-        
-        const queryFilters = {
-            name: `tbl_user.nm_user ilike '%' || :name || '%'`,
-            email: `tbl_user.email_user ilike '%' || :email || '%'`,
-            created_at_start: 'tbl_user.created_at >= :created_at_start',
-            created_at_end: 'tbl_user.created_at <= :created_at_end'
-        }
+  //     let exists: boolean
 
-        const query = pgUserRepo
-        .createQueryBuilder('tbl_user')
+  //     const userPg = (await pgUserRepo.findOne({
+  //       where: {
+  //         email_user: email
+  //       }
+  //     })) as unknown as PgUser
 
-        if (Object.keys(filter).length > 0) {
-            for (const a of Object.keys(filter)) {
-              if (queryFilters[a] !== undefined) {
-                query.andWhere(queryFilters[a], filter)
-              }
-            }
-          }
+  //     !userPg ? (exists = false) : (exists = true)
 
-        const totalItems = await query.getCount()
-        const totalPages = Math.ceil(totalItems / pageable.size)
+  //     return exists
+  //   }
 
-        const results = await query.orderBy(
-            `tbl_user.${pageable.orderBy}`,
-            pageable.order === 'ASC' ? 'ASC' : 'DESC'
-        )
-        .skip((pageable.pageNumber - 1) * pageable.size)
-        .take(pageable.size)
-        .getMany()
+  //   async listPageable(
+  //     data: ListUserPageable.Params
+  //   ): Promise<ListUserPageable.Result> {
+  //     const { pageable, filter } = data
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-        return{
-            items: results as User[],
-            totalPages,
-            totalItems,
-            orderBy: pageable.orderBy,
-            order: pageable.order
-        }
-    };
+  //     const queryFilters = {
+  //       name: `tbl_user.nm_user ilike '%' || :name || '%'`,
+  //       email: `tbl_user.email_user ilike '%' || :email || '%'`,
+  //       created_at_start: 'tbl_user.created_at >= :created_at_start',
+  //       created_at_end: 'tbl_user.created_at <= :created_at_end'
+  //     }
 
-    async ListByEmail(user: ListUserByEmail.Params): Promise<ListUserByEmail.Result> {
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+  //     const query = pgUserRepo.createQueryBuilder('tbl_user')
 
-        let idExists: boolean | PgUser = false
+  //     if (Object.keys(filter).length > 0) {
+  //       for (const a of Object.keys(filter)) {
+  //         if (queryFilters[a] !== undefined) {
+  //           query.andWhere(queryFilters[a], filter)
+  //         }
+  //       }
+  //     }
 
-        const idFind = await pgUserRepo.findOne({
-            where: {
-                email_user: user.email
-            }
-        }) as unknown as PgUser
+  //     const totalItems = await query.getCount()
+  //     const totalPages = Math.ceil(totalItems / pageable.size)
 
-        idFind ? idExists = idFind : idExists = false
+  //     const results = await query
+  //       .orderBy(
+  //         `tbl_user.${pageable.orderBy}`,
+  //         pageable.order === 'ASC' ? 'ASC' : 'DESC'
+  //       )
+  //       .skip((pageable.pageNumber - 1) * pageable.size)
+  //       .take(pageable.size)
+  //       .getMany()
 
-        return idExists as User
-    }
+  //     return {
+  //       items: results as User[],
+  //       totalPages,
+  //       totalItems,
+  //       orderBy: pageable.orderBy,
+  //       order: pageable.order
+  //     }
+  //   }
 
-    async reset(user: ResetUserPassword.Params): Promise<HttpResponse | ResetUserPassword.Result>{
-        const pgUserRepo = PgConnection.getInstance()
-            .connect()
-            .getRepository(PgUser)
+  //   async ListByEmail(
+  //     user: ListUserByEmail.Params
+  //   ): Promise<ListUserByEmail.Result> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
 
-        const userToEdit = await pgUserRepo.findOne({
-            where: {
-                email_user: user.email
-            }
-        }) as unknown as PgUser
+  //     let idExists: boolean | PgUser = false
 
-        userToEdit.password_user = user.password || userToEdit.password_user
+  //     const idFind = (await pgUserRepo.findOne({
+  //       where: {
+  //         email_user: user.email
+  //       }
+  //     })) as unknown as PgUser
 
-        const entityManager = PgConnection.getInstance().connect().createEntityManager()
+  //     idFind ? (idExists = idFind) : (idExists = false)
 
-        await entityManager.transaction(async manager => {
-            const saved = await manager.save(PgUser, userToEdit);
-            await manager.save(saved)
-        })
+  //     return idExists as User
+  //   }
 
-        return {
-            id: userToEdit.id_user as number,
-            statusCode: 201,
-            message: 'Senha redefinida com sucesso!'
-        }
-    };
+  //   async reset(
+  //     user: ResetUserPassword.Params
+  //   ): Promise<HttpResponse | ResetUserPassword.Result> {
+  //     const pgUserRepo = PgConnection.getInstance()
+  //       .connect()
+  //       .getRepository(PgUser)
+
+  //     const userToEdit = (await pgUserRepo.findOne({
+  //       where: {
+  //         email_user: user.email
+  //       }
+  //     })) as unknown as PgUser
+
+  //     userToEdit.password_user = user.password || userToEdit.password_user
+
+  //     const entityManager = PgConnection.getInstance()
+  //       .connect()
+  //       .createEntityManager()
+
+  //     await entityManager.transaction(async manager => {
+  //       const saved = await manager.save(PgUser, userToEdit)
+  //       await manager.save(saved)
+  //     })
+
+  //     return {
+  //       id: userToEdit.id_user as number,
+  //       statusCode: 201,
+  //       message: 'Senha redefinida com sucesso!'
+  //     }
+  //   }
 }

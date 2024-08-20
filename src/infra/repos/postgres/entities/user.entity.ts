@@ -1,19 +1,19 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from "typeorm";
+import { Entity, Column, CreateDateColumn, PrimaryColumn } from 'typeorm'
 
-@Entity('tbl_user')
+@Entity('tbl_users')
 export class PgUser {
-    @PrimaryGeneratedColumn()
-    id_user: number | string;
+  @PrimaryColumn()
+  id_user: string
 
-    @Column()
-    nm_user: string;
+  @Column()
+  email_user: string
 
-    @Column()
-    email_user: string;
+  @Column()
+  encripyted_password_user: string
 
-    @Column()
-    password_user: string;
+  @Column()
+  email_confirmed: boolean
 
-    @CreateDateColumn({ type: 'timestamp' })
-    created_at: Date
+  @CreateDateColumn({ type: 'timestamp' })
+  created_at: Date
 }

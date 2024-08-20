@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "ts-node-dev -r dotenv/config src/main",
-    "dev": "concurrently \"ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/main\" \"npm run dev --prefix front-end\"",
+    "dev": "ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/main",
     "clean": "rimraf dist",
     "seed": "ts-node .src/infra/repos/postgres/seeds/run-seeds.ts",
     "build": "npm run clean && tsc -p tsconfig-build.json",
