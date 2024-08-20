@@ -1,0 +1,5 @@
+export const API = '/api/'
+export const USERS = 'users'
+export const MOVIES = 'movies'
+export const AUTH = 'auth'
+export const SWAGGER = 'api-docs'

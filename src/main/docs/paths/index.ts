@@ -1,0 +1,5 @@
+export * from './user-path'
+export * from './authenticate-path'
+export * from './user-params-path'
+export * from './movie-path'
+export * from './movie-params-path'

@@ -1,0 +1,5 @@
+/devops
+/node_modules
+/tests
+/docker-compose.yml
+/Dockerfile
