@@ -1,5 +1,5 @@
 export * from './add-user-factory'
-export * from './authenticate-factory';
+export * from './authenticate-factory'
 export * from './list-user-by-id-factory'
 export * from './edit-user-factory'
 export * from './remove-user-factory'
@@ -9,3 +9,4 @@ export * from './list-movie-by-id-factory'
 export * from './add-movie-factory'
 export * from './list-user-by-email-factory'
 export * from './reset-user-password-factory'
+export * from './confirmation-email-factory'

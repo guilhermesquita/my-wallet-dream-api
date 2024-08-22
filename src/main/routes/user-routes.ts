@@ -3,6 +3,7 @@ import { adaptExpressRoute as adapt } from '../adapters'
 import {
   makeAddUserController,
   makeAuthenticateController,
+  makeConfirmationEmailController,
   makeEditUserController,
   makeListUserByEmailController,
   makeListUserByIdController,
@@ -15,6 +16,10 @@ export default (router: Router): void => {
   router.post('/users', adapt(makeAddUserController()))
   router.post('/auth', adapt(makeAuthenticateController()))
   router.get('/users/:id', adapt(makeListUserByIdController()))
+  router.get(
+    '/users/email/confirmation/:id',
+    adapt(makeConfirmationEmailController())
+  )
   router.put('/users/:id', adapt(makeEditUserController()))
   router.delete('/users/:id', adapt(makeRemoveUserController()))
   router.get('/users', adapt(makeListUserPageableController()))

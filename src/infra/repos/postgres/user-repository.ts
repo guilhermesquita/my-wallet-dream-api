@@ -1,24 +1,31 @@
+/* eslint-disable @typescript-eslint/lines-between-class-members */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PgConnection } from './helpers/connection'
 import {
   AddUser,
   Authenticate,
   CheckUserByEmail,
+  CheckConfirmaitonEmail,
+  ConfirmationEmail,
   EditUser,
   ListUserByEmail,
   ListUserById,
   ListUserPageable,
-  RemoveUser,
-  ResetUserPassword
+  RemoveUser
 } from '@/domain/contracts/repos'
-import { PgUser } from './entities'
+import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
 import { User } from '@/domain/entities'
 import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
-import { PgProfile } from './entities/profile.entity'
 
-export class PgUserRepository implements AddUser, CheckUserByEmail {
+export class PgUserRepository
+  implements
+    AddUser,
+    CheckUserByEmail,
+    ConfirmationEmail,
+    CheckConfirmaitonEmail
+{
   // Authenticate,
   // ListUserById,
   // EditUser,
@@ -51,13 +58,6 @@ export class PgUserRepository implements AddUser, CheckUserByEmail {
       await manager.save(saved)
     })
 
-    const token = new JwtTokenHandler()
-
-    const jwtToken = await token.generate({
-      expirationInMs: 8 * 60 * 60 * 1000,
-      key: pgUserRepo.id_user
-    })
-
     pgProfileRepo.id_profile = pgUserRepo.id_user
     pgProfileRepo.username_profile = user.name_profile
     pgProfileRepo.img_profile = user.img_profile
@@ -70,7 +70,6 @@ export class PgUserRepository implements AddUser, CheckUserByEmail {
     return {
       id: pgUserRepo.id_user,
       statusCode: 201,
-      token: jwtToken,
       message: 'Usuário cadastrado com sucesso'
     }
   }
@@ -92,6 +91,64 @@ export class PgUserRepository implements AddUser, CheckUserByEmail {
 
     return exists
   }
+  async confirme(
+    params: ConfirmationEmail.Params
+  ): Promise<ConfirmationEmail.Result> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+
+    const userConfirmedEmail = (await pgUserRepo.findOne({
+      where: {
+        id_user: params.id
+      }
+    })) as unknown as PgUser
+
+    userConfirmedEmail.email_confirmed = true
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      const saved = await manager.save(PgUser, userConfirmedEmail)
+      await manager.save(saved)
+    })
+
+    const token = new JwtTokenHandler()
+
+    const jwtToken = await token.generate({
+      expirationInMs: 8 * 60 * 60 * 1000,
+      key: userConfirmedEmail.id_user
+    })
+
+    return {
+      id: userConfirmedEmail.id_user,
+      statusCode: 200,
+      message: 'Email confirmado com sucesso',
+      token: jwtToken
+    }
+  }
+
+  async checkConfirmation(id: string): Promise<boolean> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+
+    let exists: boolean
+
+    const userPg = (await pgUserRepo.findOne({
+      where: {
+        id_user: id,
+        email_confirmed: true
+      }
+    })) as unknown as PgUser
+
+    !userPg ? (exists = false) : (exists = true)
+
+    return exists
+  }
+
   //   async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
   //     const pgUserRepo = PgConnection.getInstance()
   //       .connect()

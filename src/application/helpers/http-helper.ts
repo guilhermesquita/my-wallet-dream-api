@@ -48,7 +48,7 @@ export const created = (data: any): HttpResponse => ({
   body: data
 })
 
-export const noContent = (): HttpResponse => ({
+export const noContent = (message?: string): HttpResponse => ({
   statusCode: 204,
-  message: 'Nenhum conteúdo encontrado'
+  message: message ?? 'Nenhum conteúdo encontrado'
 })
