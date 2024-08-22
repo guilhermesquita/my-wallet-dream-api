@@ -7,9 +7,9 @@ export const badRequest = (error: Error): HttpResponse => ({
   body: error.message
 })
 
-export const conflict = (): HttpResponse => ({
+export const conflict = (resource?: string): HttpResponse => ({
   statusCode: 409,
-  message: 'recurso já cadastrado',
+  message: resource ? `${resource} já cadastrado` : 'Recurso já cadastrado'
 })
 
 export const unauthorized = (): HttpResponse => ({

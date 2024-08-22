@@ -1,5 +1,5 @@
 import { AddUser } from '@/domain/contracts/repos'
-import { badRequest, created, serverError } from '../helpers'
+import { badRequest, conflict, created, serverError } from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
 
 export class AddUserController implements Controller {
@@ -22,6 +22,10 @@ export class AddUserController implements Controller {
         encrypted_password: password,
         img_profile
       })
+
+      if ('statusCode' in result && result.statusCode === 409) {
+        return conflict('email')
+      }
 
       return created(result)
     } catch (error: any) {
