@@ -14,11 +14,13 @@ export class AddUserController implements Controller {
       if (erro) {
         return badRequest(erro)
       }
-      const { email, password } = request
+      const { username, email, password, img_profile } = request
       const result = await this.addUser.add({
+        name_profile: username,
         email_user: email,
         emailConfirmed: false,
-        encrypted_password: password
+        encrypted_password: password,
+        img_profile
       })
 
       return created(result)
@@ -30,7 +32,9 @@ export class AddUserController implements Controller {
 
 export namespace AddUserController {
   export type Request = {
+    username: string
     email: string
     password: string
+    img_profile: string
   }
 }

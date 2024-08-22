@@ -6,9 +6,11 @@ export interface AddUser {
 
 export namespace AddUser {
   export type Params = {
+    name_profile: string
     email_user: string
     emailConfirmed: boolean
     encrypted_password: string
+    img_profile: string
   }
   export type Result = {
     id: string

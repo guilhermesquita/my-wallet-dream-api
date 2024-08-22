@@ -16,6 +16,7 @@ import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
 import { User } from '@/domain/entities'
 import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
+import { PgProfile } from './entities/profile.entity'
 
 export class PgUserRepository implements AddUser, CheckUserByEmail {
   // Authenticate,
@@ -27,6 +28,7 @@ export class PgUserRepository implements AddUser, CheckUserByEmail {
   // ResetUserPassword
   async add(user: AddUser.Params): Promise<AddUser.Result> {
     const pgUserRepo = new PgUser()
+    const pgProfileRepo = new PgProfile()
 
     const uuuid = new UuidGenerator()
     const id = uuuid.generate()
@@ -54,6 +56,15 @@ export class PgUserRepository implements AddUser, CheckUserByEmail {
     const jwtToken = await token.generate({
       expirationInMs: 8 * 60 * 60 * 1000,
       key: pgUserRepo.id_user
+    })
+
+    pgProfileRepo.id_profile = pgUserRepo.id_user
+    pgProfileRepo.username_profile = user.name_profile
+    pgProfileRepo.img_profile = user.img_profile
+
+    await entityManager.transaction(async manager => {
+      await manager.save(PgProfile, pgProfileRepo)
+      await manager.save(pgProfileRepo)
     })
 
     return {
