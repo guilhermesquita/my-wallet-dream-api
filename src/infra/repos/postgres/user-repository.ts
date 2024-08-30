@@ -150,23 +150,23 @@ export class PgUserRepository
     return exists
   }
 
-  //   async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
-  //     const pgUserRepo = PgConnection.getInstance()
-  //       .connect()
-  //       .getRepository(PgUser)
+  // async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
+  //   const pgUserRepo = PgConnection.getInstance()
+  //     .connect()
+  //     .getRepository(PgUser)
 
-  //     let idExists: boolean | PgUser = false
+  //   let idExists: boolean | PgUser = false
 
-  //     const idFind = (await pgUserRepo.findOne({
-  //       where: {
-  //         id_user: user.id
-  //       }
-  //     })) as unknown as PgUser
+  //   const idFind = (await pgUserRepo.findOne({
+  //     where: {
+  //       id_user: user.id
+  //     }
+  //   })) as unknown as PgUser
 
-  //     idFind ? (idExists = idFind) : (idExists = false)
+  //   idFind ? (idExists = idFind) : (idExists = false)
 
-  //     return idExists as User
-  //   }
+  //   return idExists as User
+  // }
 
   async auth(
     params: Authenticate.Params
