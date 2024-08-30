@@ -1,9 +1,10 @@
-import { ListUserById } from "@/domain/contracts/repos";
-import { DbListUserById } from "@/domain/usecases";
-import { JwtTokenHandler } from "@/infra/gateways";
-import { PgUserRepository } from "@/infra/repos/postgres";
+import { ListUserById } from '@/domain/contracts/repos'
+import { DbListUserById } from '@/domain/usecases'
+import { JwtTokenHandler } from '@/infra/gateways'
+import { RedisPgUserRepository } from '@/infra/repos/postgres/redis-user-repository'
+import { RedisService } from '@/main/config/redis'
 
 export const makeDbListUserById = (): ListUserById => {
-    const pgUserRepository = new PgUserRepository()
-    return new DbListUserById(pgUserRepository, new JwtTokenHandler())
+  const pgRedisUserRepository = new RedisPgUserRepository(new RedisService())
+  return new DbListUserById(pgRedisUserRepository, new JwtTokenHandler())
 }

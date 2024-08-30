@@ -5,7 +5,7 @@ import { PgConnection } from './helpers'
 import { ListUserById } from '@/domain/contracts/repos'
 import { User } from '@/domain/entities'
 
-export class RedisUserRepository implements ListUserById {
+export class RedisPgUserRepository implements ListUserById {
   constructor(private readonly redisService: RedisService) {}
   async ListById(user: ListUserById.Params): Promise<PgUser> {
     const pgUserRepo = PgConnection.getInstance()
