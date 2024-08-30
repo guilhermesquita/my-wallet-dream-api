@@ -12,7 +12,7 @@ export namespace Authenticate {
     password: string
   }
   export type Result = {
-    id: number
+    id: string
     email: string
     token: string
   }

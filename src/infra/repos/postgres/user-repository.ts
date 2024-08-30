@@ -24,7 +24,8 @@ export class PgUserRepository
     AddUser,
     CheckUserByEmail,
     ConfirmationEmail,
-    CheckConfirmaitonEmail
+    CheckConfirmaitonEmail,
+    Authenticate
 {
   // Authenticate,
   // ListUserById,
@@ -167,37 +168,50 @@ export class PgUserRepository
   //     return idExists as User
   //   }
 
-  //   async auth(
-  //     params: Authenticate.Params
-  //   ): Promise<Authenticate.Result | boolean> {
-  //     const pgUserRepo = PgConnection.getInstance()
-  //       .connect()
-  //       .getRepository(PgUser)
+  async auth(
+    params: Authenticate.Params
+  ): Promise<Authenticate.Result | boolean> {
+    try {
+      const pgUserRepo = PgConnection.getInstance()
+        .connect()
+        .getRepository(PgUser)
 
-  //     const userPg = (await pgUserRepo.findOne({
-  //       where: {
-  //         email_user: params.email,
-  //         password_user: params.password
-  //       }
-  //     })) as unknown as PgUser
+      const user = (await pgUserRepo.findOne({
+        where: {
+          email_user: params.email
+        }
+      })) as PgUser
 
-  //     if (!userPg) {
-  //       return false
-  //     }
+      if (!user) {
+        return false
+      }
 
-  //     const token = new JwtTokenHandler()
+      const hashManager = new HashManager()
+      const isCorrectPassword = await hashManager.compare(
+        params.password,
+        user.encripyted_password_user
+      )
 
-  //     const jwtToken = await token.generate({
-  //       expirationInMs: 8 * 60 * 60 * 1000,
-  //       key: userPg.id_user as string
-  //     })
+      if (!isCorrectPassword) {
+        return false
+      }
 
-  //     return {
-  //       id: userPg.id_user as number,
-  //       email: userPg.email_user,
-  //       token: jwtToken
-  //     }
-  //   }
+      const tokenHandler = new JwtTokenHandler()
+      const jwtToken = await tokenHandler.generate({
+        expirationInMs: 8 * 60 * 60 * 1000, // 8 horas
+        key: user.id_user
+      })
+
+      return {
+        id: user.id_user,
+        email: user.email_user,
+        token: jwtToken
+      }
+    } catch (error) {
+      console.error('Erro ao autenticar o usuário:', error)
+      return false // Retorna falso em caso de erro
+    }
+  }
 
   //   async edit(user: EditUser.Params): Promise<EditUser.Result> {
   //     const pgUserRepo = PgConnection.getInstance()
