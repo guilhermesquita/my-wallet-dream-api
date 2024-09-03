@@ -18,6 +18,7 @@ import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
 import { User } from '@/domain/entities'
 import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
+import { RedisService } from '@/main/config/redis'
 
 export class PgUserRepository
   implements
@@ -67,6 +68,15 @@ export class PgUserRepository
       await manager.save(PgProfile, pgProfileRepo)
       await manager.save(pgProfileRepo)
     })
+
+    const redisService = new RedisService()
+    await redisService.del('users')
+
+    // const users = await PgConnection.getInstance()
+    //   .connect()
+    //   .getRepository(PgUser)
+    //   .find()
+    // await redisService.set('users', JSON.stringify(users))
 
     return {
       id: pgUserRepo.id_user,
