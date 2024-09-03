@@ -12,5 +12,12 @@ services:
     volumes:
       - postgres_data:/bitnami/postgresql
 
+  redis:  
+    image: bitnami/redis:latest
+    ports:
+      - '6379:6379'
+    environment:
+      - REDIS_PASSWORD=redismywalletdream
+
 volumes:
   postgres_data:
