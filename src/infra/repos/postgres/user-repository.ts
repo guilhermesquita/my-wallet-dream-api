@@ -11,7 +11,8 @@ import {
   ListUserByEmail,
   ListUserById,
   ListUserPageable,
-  RemoveUser
+  RemoveUser,
+  UploadImageProfile
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
@@ -28,7 +29,8 @@ export class PgUserRepository
     CheckUserByEmail,
     ConfirmationEmail,
     CheckConfirmaitonEmail,
-    Authenticate
+    Authenticate,
+    UploadImageProfile
 {
   // Authenticate,
   // ListUserById,
@@ -179,6 +181,17 @@ export class PgUserRepository
 
   //   return idExists as User
   // }
+
+  async uploadImage(
+    params: UploadImageProfile.Params
+  ): Promise<UploadImageProfile.Return> {
+    console.log(params)
+    return {
+      id: params.idUser,
+      statusCode: 200,
+      message: 'Imagem enviada com sucesso'
+    }
+  }
 
   async auth(
     params: Authenticate.Params
