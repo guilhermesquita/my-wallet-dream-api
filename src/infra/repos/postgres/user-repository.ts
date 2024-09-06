@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/lines-between-class-members */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PgConnection } from './helpers/connection'
+import fs from 'fs'
 import {
   AddUser,
   Authenticate,
@@ -22,6 +23,7 @@ import { HashManager } from '@/infra/gateways/hash-manager'
 import { RedisService } from '@/main/config/redis'
 import multer from 'multer'
 import { storage } from '@/main/config/multer'
+import { r2 } from '@/main/config/cloudflare-s3'
 
 export class PgUserRepository
   implements
@@ -185,7 +187,20 @@ export class PgUserRepository
   async uploadImage(
     params: UploadImageProfile.Params
   ): Promise<UploadImageProfile.Return> {
-    console.log(params)
+    const fileContent = fs.readFileSync(params.img_profile.path)
+
+    const params1 = {
+      Bucket: 'my-wallet-dream',
+      Key: params.img_profile.filename,
+      Body: fileContent,
+      ContentType: params.img_profile.mimetype
+    }
+
+    const data = await r2.upload(params1).promise()
+    fs.unlinkSync(params.img_profile.path)
+
+    console.log(`Upload concluído: ${data.Location}`)
+
     return {
       id: params.idUser,
       statusCode: 200,
