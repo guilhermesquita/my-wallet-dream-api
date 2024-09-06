@@ -19,6 +19,8 @@ import { User } from '@/domain/entities'
 import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
 import { RedisService } from '@/main/config/redis'
+import multer from 'multer'
+import { storage } from '@/main/config/multer'
 
 export class PgUserRepository
   implements
