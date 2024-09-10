@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/lines-between-class-members */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { PgConnection } from './helpers/connection'
+import fs from 'fs'
 import {
   AddUser,
   Authenticate,
@@ -11,13 +12,18 @@ import {
   ListUserByEmail,
   ListUserById,
   ListUserPageable,
-  RemoveUser
+  RemoveUser,
+  UploadImageProfile
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
 import { User } from '@/domain/entities'
 import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
+import { RedisService } from '@/main/config/redis'
+import multer from 'multer'
+import { storage } from '@/main/config/multer'
+import { r2 } from '@/main/config/cloudflare-s3'
 
 export class PgUserRepository
   implements
@@ -25,7 +31,8 @@ export class PgUserRepository
     CheckUserByEmail,
     ConfirmationEmail,
     CheckConfirmaitonEmail,
-    Authenticate
+    Authenticate,
+    UploadImageProfile
 {
   // Authenticate,
   // ListUserById,
@@ -67,6 +74,15 @@ export class PgUserRepository
       await manager.save(PgProfile, pgProfileRepo)
       await manager.save(pgProfileRepo)
     })
+
+    const redisService = new RedisService()
+    await redisService.del('users')
+
+    // const users = await PgConnection.getInstance()
+    //   .connect()
+    //   .getRepository(PgUser)
+    //   .find()
+    // await redisService.set('users', JSON.stringify(users))
 
     return {
       id: pgUserRepo.id_user,
@@ -167,6 +183,53 @@ export class PgUserRepository
 
   //   return idExists as User
   // }
+
+  async uploadImage(
+    params: UploadImageProfile.Params
+  ): Promise<UploadImageProfile.Return | boolean> {
+    const fileContent = fs.readFileSync(params.img_profile.path)
+
+    const pgProfileRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgProfile)
+
+    const uploadImageProfile = (await pgProfileRepo.findOne({
+      where: {
+        id_profile: params.idUser
+      }
+    })) as unknown as PgProfile
+
+    if (!uploadImageProfile) {
+      return false
+    }
+
+    const params1 = {
+      Bucket: 'my-wallet-dream',
+      Key: params.img_profile.filename,
+      Body: fileContent,
+      ContentType: params.img_profile.mimetype
+    }
+
+    const data = await r2.upload(params1).promise()
+    fs.unlinkSync(params.img_profile.path)
+
+    uploadImageProfile.img_profile = `https://pub-d575c6b3e1654ffe98fbc926a91ae6a6.r2.dev/my-wallet-dream/${data.Key}`
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      const saved = await manager.save(PgProfile, uploadImageProfile)
+      await manager.save(saved)
+    })
+
+    return {
+      id: params.idUser,
+      statusCode: 200,
+      message: 'Imagem enviada com sucesso'
+    }
+  }
 
   async auth(
     params: Authenticate.Params

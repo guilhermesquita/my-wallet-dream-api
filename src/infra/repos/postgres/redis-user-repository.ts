@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import { RedisService } from '@/main/config/redis'
 import { PgUser } from './entities'
 import { PgConnection } from './helpers'
@@ -12,19 +11,27 @@ export class RedisPgUserRepository implements ListUserById {
       .connect()
       .getRepository(PgUser)
 
+    const idUser = user.id
     const cachedUsers = await this.redisService.get('users')
 
     if (!cachedUsers) {
+      const users = await pgUserRepo.find()
+
       const userFindById = (await pgUserRepo.findOne({
         where: {
           id_user: user.id
         }
       })) as unknown as PgUser
 
-      await this.redisService.set('users', JSON.stringify(userFindById))
+      await this.redisService.set('users', JSON.stringify(users))
       return userFindById as User
     }
 
-    return JSON.parse(cachedUsers as string)
+    const userJson = JSON.parse(cachedUsers) as any[]
+    const userById = userJson.filter(
+      user => user.id_user === idUser
+    ) as unknown as PgUser
+
+    return userById
   }
 }
