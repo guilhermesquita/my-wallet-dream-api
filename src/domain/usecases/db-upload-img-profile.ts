@@ -5,7 +5,7 @@ export class DbUploadImgProfile implements UploadImageProfile {
   constructor(private readonly uploadImageProfile: UploadImageProfile) {}
   async uploadImage(
     params: UploadImageProfile.Params
-  ): Promise<UploadImageProfile.Return | HttpResponse> {
+  ): Promise<UploadImageProfile.Return | HttpResponse | boolean> {
     return await this.uploadImageProfile.uploadImage(params)
   }
 }

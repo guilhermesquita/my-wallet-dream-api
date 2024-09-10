@@ -186,8 +186,22 @@ export class PgUserRepository
 
   async uploadImage(
     params: UploadImageProfile.Params
-  ): Promise<UploadImageProfile.Return> {
+  ): Promise<UploadImageProfile.Return | boolean> {
     const fileContent = fs.readFileSync(params.img_profile.path)
+
+    const pgProfileRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgProfile)
+
+    const uploadImageProfile = (await pgProfileRepo.findOne({
+      where: {
+        id_profile: params.idUser
+      }
+    })) as unknown as PgProfile
+
+    if (!uploadImageProfile) {
+      return false
+    }
 
     const params1 = {
       Bucket: 'my-wallet-dream',
@@ -199,7 +213,16 @@ export class PgUserRepository
     const data = await r2.upload(params1).promise()
     fs.unlinkSync(params.img_profile.path)
 
-    console.log(`Upload concluído: ${data.Location}`)
+    uploadImageProfile.img_profile = `https://pub-d575c6b3e1654ffe98fbc926a91ae6a6.r2.dev/my-wallet-dream/${data.Key}`
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      const saved = await manager.save(PgProfile, uploadImageProfile)
+      await manager.save(saved)
+    })
 
     return {
       id: params.idUser,
