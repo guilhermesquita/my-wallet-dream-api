@@ -9,6 +9,7 @@ export interface UploadImageProfile {
 export namespace UploadImageProfile {
   export type Params = {
     idUser: string
+    token: string
     img_profile: Express.Multer.File
   }
   export type Return = {
