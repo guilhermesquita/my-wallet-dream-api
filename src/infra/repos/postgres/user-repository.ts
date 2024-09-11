@@ -203,6 +203,21 @@ export class PgUserRepository
       return false
     }
 
+    if (uploadImageProfile.img_profile) {
+      const currentImageKey = uploadImageProfile.img_profile
+        .split('/my-wallet-dream/')
+        .pop()
+
+      if (currentImageKey) {
+        const deleteParams = {
+          Bucket: 'my-wallet-dream',
+          Key: currentImageKey
+        }
+
+        await r2.deleteObject(deleteParams).promise()
+      }
+    }
+
     const params1 = {
       Bucket: 'my-wallet-dream',
       Key: params.img_profile.filename,
