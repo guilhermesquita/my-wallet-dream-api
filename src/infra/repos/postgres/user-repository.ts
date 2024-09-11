@@ -45,44 +45,35 @@ export class PgUserRepository
     const pgUserRepo = new PgUser()
     const pgProfileRepo = new PgProfile()
 
-    const uuuid = new UuidGenerator()
-    const id = uuuid.generate()
+    // Gerar um novo UUID para o user e o profile
+    const uuid = new UuidGenerator()
+    const id = uuid.generate()
+
+    pgProfileRepo.id_profile = id
+    pgProfileRepo.username_profile = user.name_profile
+    pgProfileRepo.img_profile = user.img_profile
 
     pgUserRepo.id_user = id
     pgUserRepo.email_user = user.email_user
     pgUserRepo.email_confirmed = user.emailConfirmed
 
     const hashManager = new HashManager()
-    const hashedPasword = await hashManager.hash(user.encrypted_password)
+    const hashedPassword = await hashManager.hash(user.encrypted_password)
+    pgUserRepo.encripyted_password_user = hashedPassword
 
-    pgUserRepo.encripyted_password_user = hashedPasword
+    pgUserRepo.fk_identify_profile = pgProfileRepo
 
     const entityManager = PgConnection.getInstance()
       .connect()
       .createEntityManager()
 
     await entityManager.transaction(async manager => {
-      const saved = await manager.save(PgUser, pgUserRepo)
-      await manager.save(saved)
-    })
-
-    pgProfileRepo.id_profile = pgUserRepo.id_user
-    pgProfileRepo.username_profile = user.name_profile
-    pgProfileRepo.img_profile = user.img_profile
-
-    await entityManager.transaction(async manager => {
       await manager.save(PgProfile, pgProfileRepo)
-      await manager.save(pgProfileRepo)
+      await manager.save(PgUser, pgUserRepo)
     })
 
     const redisService = new RedisService()
     await redisService.del('users')
-
-    // const users = await PgConnection.getInstance()
-    //   .connect()
-    //   .getRepository(PgUser)
-    //   .find()
-    // await redisService.set('users', JSON.stringify(users))
 
     return {
       id: pgUserRepo.id_user,

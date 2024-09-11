@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm'
+import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm'
+import { PgUser } from './user.entity'
 
 @Entity('tbl_profiles')
 export class PgProfile {
@@ -10,4 +11,7 @@ export class PgProfile {
 
   @Column()
   img_profile: string
+
+  @OneToOne(() => PgUser, user => user.fk_identify_profile)
+  user: PgUser
 }

@@ -2,7 +2,6 @@ import { RedisService } from '@/main/config/redis'
 import { PgUser } from './entities'
 import { PgConnection } from './helpers'
 import { ListUserById } from '@/domain/contracts/repos'
-import { User } from '@/domain/entities'
 
 export class RedisPgUserRepository implements ListUserById {
   constructor(private readonly redisService: RedisService) {}
@@ -15,23 +14,19 @@ export class RedisPgUserRepository implements ListUserById {
     const cachedUsers = await this.redisService.get('users')
 
     if (!cachedUsers) {
-      const users = await pgUserRepo.find()
+      const users = await pgUserRepo.find({
+        relations: ['fk_identify_profile']
+      })
 
-      const userFindById = (await pgUserRepo.findOne({
-        where: {
-          id_user: user.id
-        }
-      })) as unknown as PgUser
+      const userFindById = users.find(user => user.id_user === idUser)
 
       await this.redisService.set('users', JSON.stringify(users))
-      return userFindById as User
+      return userFindById as PgUser
     }
 
-    const userJson = JSON.parse(cachedUsers) as any[]
-    const userById = userJson.filter(
-      user => user.id_user === idUser
-    ) as unknown as PgUser
+    const userJson = JSON.parse(cachedUsers) as PgUser[]
+    const userById = userJson.find(user => user.id_user === idUser)
 
-    return userById
+    return userById as PgUser
   }
 }
