@@ -45,7 +45,6 @@ export class PgUserRepository
     const pgUserRepo = new PgUser()
     const pgProfileRepo = new PgProfile()
 
-    // Gerar um novo UUID para o user e o profile
     const uuid = new UuidGenerator()
     const id = uuid.generate()
 
