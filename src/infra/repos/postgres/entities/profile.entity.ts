@@ -1,7 +1,7 @@
 import { Column, Entity, OneToOne, PrimaryColumn } from 'typeorm'
 import { PgUser } from './user.entity'
 
-@Entity('tbl_profiles')
+@Entity({ schema: 'public', name: 'tbl_profiles' })
 export class PgProfile {
   @PrimaryColumn()
   id_profile: string

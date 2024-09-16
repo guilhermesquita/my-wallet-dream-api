@@ -7,7 +7,7 @@ import {
   OneToOne
 } from 'typeorm'
 import { PgProfile } from './profile.entity'
-@Entity('tbl_users')
+@Entity({ schema: 'auth', name: 'tbl_users' })
 export class PgUser {
   @PrimaryColumn()
   id_user: string

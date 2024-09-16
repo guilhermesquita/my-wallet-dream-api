@@ -1,6 +1,6 @@
 import { HttpResponse } from '@/application/contracts'
 import { Authenticate, CheckConfirmaitonEmail } from '../contracts/repos'
-import { forbidden, notAcceptable } from '@/application/helpers'
+import { notAcceptable } from '@/application/helpers'
 
 export class DbAuthenticate implements Authenticate {
   constructor(
@@ -16,12 +16,12 @@ export class DbAuthenticate implements Authenticate {
       return notAcceptable('Email ou senha incorreta')
     }
 
-    if (!(await this.checkEmail.checkConfirmation(params.email))) {
-      return forbidden({
-        message: 'Confirme seu email!',
-        name: 'email not confirmed'
-      })
-    }
+    // if (!(await this.checkEmail.checkConfirmation(params.email))) {
+    //   return forbidden({
+    //     message: 'Confirme seu email!',
+    //     name: 'email not confirmed'
+    //   })
+    // }
 
     return authentication
   }
