@@ -156,24 +156,6 @@ export class PgUserRepository
     return exists
   }
 
-  // async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
-  //   const pgUserRepo = PgConnection.getInstance()
-  //     .connect()
-  //     .getRepository(PgUser)
-
-  //   let idExists: boolean | PgUser = false
-
-  //   const idFind = (await pgUserRepo.findOne({
-  //     where: {
-  //       id_user: user.id
-  //     }
-  //   })) as unknown as PgUser
-
-  //   idFind ? (idExists = idFind) : (idExists = false)
-
-  //   return idExists as User
-  // }
-
   async uploadImage(
     params: UploadImageProfile.Params
   ): Promise<UploadImageProfile.Return | boolean> {
@@ -228,6 +210,9 @@ export class PgUserRepository
       const saved = await manager.save(PgProfile, uploadImageProfile)
       await manager.save(saved)
     })
+
+    const redisService = new RedisService()
+    await redisService.del('users')
 
     return {
       id: params.idUser,
