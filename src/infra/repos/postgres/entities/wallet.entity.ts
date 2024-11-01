@@ -5,9 +5,11 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  OneToMany
 } from 'typeorm'
 import { PgProfile } from './profile.entity'
+import { PgExpense } from './expense.entity'
 
 @Entity({ schema: 'public', name: 'tbl_wallets' })
 export class PgWallet extends BaseEntity {
@@ -29,6 +31,9 @@ export class PgWallet extends BaseEntity {
   @ManyToOne(() => PgProfile, profile => profile.wallets)
   @JoinColumn({ name: 'fk_profile' })
   fk_profile: PgProfile
+
+  @OneToMany(() => PgExpense, expense => expense.fk_wallet)
+  expenses: PgExpense[]
 
   @CreateDateColumn({ type: 'timestamp' })
   created_at: Date
