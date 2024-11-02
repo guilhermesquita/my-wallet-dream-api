@@ -1,29 +1,10 @@
 import { PgConnection } from './helpers/connection'
-import { AddWallet } from '@/domain/contracts/repos'
+import { AddWallet, CheckTotalPriceWalletById } from '@/domain/contracts/repos'
 import { PgProfile, PgWallet } from './entities'
 
-export class PgWalletRepository implements AddWallet {
-  //   async listAll(): Promise<ListMovieAll.Result> {
-  //     const pgMovieRepo = PgConnection.getInstance()
-  //       .connect()
-  //       .getRepository(PgMovie)
-  //     const moviesPg = await pgMovieRepo.find()
-  //     return moviesPg
-  //   }
-  //   async ListById(movie: ListMovieById.Params): Promise<ListMovieById.Result> {
-  //     const pgMovieRepo = PgConnection.getInstance()
-  //       .connect()
-  //       .getRepository(PgMovie)
-  //     let idExists: boolean | PgMovie = false
-  //     const idFind = await pgMovieRepo.findOne({
-  //       where: {
-  //         id_movie: movie.id
-  //       }
-  //     })
-  //     idFind ? (idExists = idFind) : (idExists = false)
-  //     return idExists as Movie
-  //   }
-
+export class PgWalletRepository
+  implements AddWallet, CheckTotalPriceWalletById
+{
   async add(wallet: AddWallet.Params): Promise<AddWallet.Result> {
     const pgWalletRepo = new PgWallet()
 
@@ -46,5 +27,36 @@ export class PgWalletRepository implements AddWallet {
       statusCode: 201,
       message: 'Carteira criada com sucesso'
     }
+  }
+
+  async check(id: number): Promise<number | boolean> {
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
+
+    const wallet = (await pgWalletRepo.findOne({
+      where: {
+        id_wallet: id
+      },
+      relations: {
+        expenses: true
+      }
+    })) as PgWallet
+
+    if (!wallet) {
+      return false
+    }
+
+    const totalPriceWallet = wallet.total_price_wallet as unknown as number
+    const expenses = wallet.expenses
+    let totalValueExpenses: number = 0
+
+    for (const expense of expenses) {
+      totalValueExpenses += expense.value_expense
+    }
+
+    const totalValue = totalPriceWallet - totalValueExpenses
+
+    return Number(totalValue)
   }
 }

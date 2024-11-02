@@ -1,6 +1,6 @@
 import { AddExpense } from '@/domain/contracts/repos'
 import { Controller, HttpResponse, Validation } from '../contracts'
-import { badRequest, ok, serverError } from '../helpers'
+import { badRequest, notAcceptable, ok, serverError } from '../helpers'
 
 export class AddExpenseController implements Controller {
   constructor(
@@ -15,6 +15,15 @@ export class AddExpenseController implements Controller {
         return badRequest(erro)
       }
       const result = await this.addExpense.add(request)
+      if (
+        'body' in result &&
+        result.body === 'Valor do gasto ultrapassou o limite da carteira'
+      ) {
+        return notAcceptable('Valor do gasto ultrapassou o limite da carteira ')
+      }
+      if ('statusCode' in result && result.statusCode === 406) {
+        return notAcceptable('Carteira não encontrada')
+      }
       return ok(result)
     } catch (error: any) {
       return serverError(error)
