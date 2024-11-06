@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/lines-between-class-members */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { PgConnection } from './helpers/connection'
 import fs from 'fs'
 import {
@@ -8,22 +6,14 @@ import {
   CheckUserByEmail,
   CheckConfirmaitonEmail,
   ConfirmationEmail,
-  EditUser,
-  ListUserByEmail,
-  ListUserById,
-  ListUserPageable,
-  RemoveUser,
   UploadImageProfile
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
-import { User } from '@/domain/entities'
-import { HttpResponse } from '@/application/contracts'
 import { HashManager } from '@/infra/gateways/hash-manager'
 import { RedisService } from '@/main/config/redis'
-import multer from 'multer'
-import { storage } from '@/main/config/multer'
 import { r2 } from '@/main/config/cloudflare-s3'
+import { sendEmail } from '@/main/config/nodemailer'
 
 export class PgUserRepository
   implements
@@ -34,7 +24,6 @@ export class PgUserRepository
     Authenticate,
     UploadImageProfile
 {
-  // Authenticate,
   // ListUserById,
   // EditUser,
   // RemoveUser,
@@ -71,6 +60,12 @@ export class PgUserRepository
       await manager.save(PgUser, pgUserRepo)
     })
 
+    await sendEmail({
+      subject: 'Confirme seu email!',
+      html: `<p>Olá ${pgProfileRepo.username_profile}, clique no link para confimar seu email: <a href="#" target="_blank">linkdaconfirmacao.com</a></p>`,
+      to: pgUserRepo.email_user
+    })
+
     const redisService = new RedisService()
     await redisService.del('users')
 
@@ -98,6 +93,7 @@ export class PgUserRepository
 
     return exists
   }
+
   async confirme(
     params: ConfirmationEmail.Params
   ): Promise<ConfirmationEmail.Result> {
