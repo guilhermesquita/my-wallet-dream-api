@@ -6,7 +6,8 @@ import {
   CheckUserByEmail,
   CheckConfirmaitonEmail,
   ConfirmationEmail,
-  UploadImageProfile
+  UploadImageProfile,
+  ListUserById
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
@@ -22,7 +23,8 @@ export class PgUserRepository
     ConfirmationEmail,
     CheckConfirmaitonEmail,
     Authenticate,
-    UploadImageProfile
+    UploadImageProfile,
+    ListUserById
 {
   // ListUserById,
   // EditUser,
@@ -30,6 +32,7 @@ export class PgUserRepository
   // ListUserPageable,
   // ListUserByEmail,
   // ResetUserPassword
+  constructor(private readonly redisService: RedisService) {}
   async add(user: AddUser.Params): Promise<AddUser.Result> {
     const pgUserRepo = new PgUser()
     const pgProfileRepo = new PgProfile()
@@ -74,6 +77,45 @@ export class PgUserRepository
       statusCode: 201,
       message: 'Usuário cadastrado com sucesso'
     }
+  }
+
+  async ListById(user: ListUserById.Params): Promise<PgUser> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+
+    const idUser = user.id
+    const cachedUsers = await this.redisService.get('users')
+
+    if (!cachedUsers) {
+      const users = await pgUserRepo.find({
+        relations: {
+          fk_identify_profile: {
+            wallets: true
+          }
+        },
+        where: {
+          fk_identify_profile: {
+            wallets: {
+              is_public: true
+            }
+          }
+        }
+      })
+
+      const userFindById = users.find(user => user.id_user === idUser)
+
+      await this.redisService.set('users', JSON.stringify(users))
+      return userFindById as PgUser
+    }
+
+    const userJson = JSON.parse(cachedUsers) as PgUser[]
+    const userById = userJson.find(user => user.id_user === idUser)
+
+    const redisService = new RedisService()
+    await redisService.del('users')
+
+    return userById as PgUser
   }
 
   async check(email: string): Promise<boolean> {
