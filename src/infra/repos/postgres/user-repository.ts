@@ -7,7 +7,8 @@ import {
   CheckConfirmaitonEmail,
   ConfirmationEmail,
   UploadImageProfile,
-  ListUserById
+  ListUserById,
+  EditUser
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
@@ -15,6 +16,7 @@ import { HashManager } from '@/infra/gateways/hash-manager'
 import { RedisService } from '@/main/config/redis'
 import { r2 } from '@/main/config/cloudflare-s3'
 import { sendEmail } from '@/main/config/nodemailer'
+import { HttpResponse } from '@/application/contracts'
 
 export class PgUserRepository
   implements
@@ -24,10 +26,10 @@ export class PgUserRepository
     CheckConfirmaitonEmail,
     Authenticate,
     UploadImageProfile,
-    ListUserById
+    ListUserById,
+    EditUser
 {
   // ListUserById,
-  // EditUser,
   // RemoveUser,
   // ListUserPageable,
   // ListUserByEmail,
@@ -76,6 +78,61 @@ export class PgUserRepository
       id: pgUserRepo.id_user,
       statusCode: 201,
       message: 'Usuário cadastrado com sucesso'
+    }
+  }
+
+  async edit(user: EditUser.Params): Promise<EditUser.Result | HttpResponse> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+    const pgProfileRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgProfile)
+
+    const userToEdit = (await pgUserRepo.findOne({
+      where: {
+        id_user: user.id
+      }
+    })) as PgUser
+
+    userToEdit.email_user = user.email || userToEdit.email_user
+    userToEdit.encripyted_password_user =
+      user.password || userToEdit.encripyted_password_user
+
+    const profileToEdit = (await pgProfileRepo.findOne({
+      where: {
+        id_profile: user.id
+      }
+    })) as PgProfile
+
+    profileToEdit.username_profile =
+      user.username ?? profileToEdit.username_profile
+
+    if (user.email) {
+      userToEdit.email_confirmed = false
+      await sendEmail({
+        subject: 'Confirme seu email!',
+        html: `<p>Olá ${profileToEdit.username_profile}, clique no link para confimar seu email: <a href="#" target="_blank">linkdaconfirmacao.com</a></p>`,
+        to: user.email
+      })
+    }
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.save(PgProfile, profileToEdit)
+      await manager.save(PgUser, userToEdit)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('users')
+
+    return {
+      id: userToEdit.id_user,
+      statusCode: 201,
+      message: 'Usuário editado com sucesso'
     }
   }
 

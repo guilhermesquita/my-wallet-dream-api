@@ -8,7 +8,6 @@ export interface ListUserById {
 export namespace ListUserById {
   export type Params = {
     id: string
-    token: string
   }
   export type Result = User | boolean | HttpResponse
 }

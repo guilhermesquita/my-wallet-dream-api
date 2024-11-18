@@ -6,7 +6,7 @@ export const makeEditUserValidation = (): Validation => {
   const schema = yup.object().shape({
     name: yup.string(),
     email: yup.string().email(),
-    password: yup.string().min(4, 'Password must be greater than 3 caracters'),
+    password: yup.string().min(4, 'Password must be greater than 3 caracters')
   })
 
   return new RequiredFieldYupValidation(schema)
