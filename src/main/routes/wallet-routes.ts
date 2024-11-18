@@ -2,6 +2,7 @@ import { Router } from 'express'
 import { adaptExpressRoute as adapt } from '../adapters'
 import {
   makeAddWalletController,
+  makeEditWalletController,
   makeListWalletByIdController,
   makeListWalletsByProfileIdController
   // makeListMovieAllController,
@@ -15,5 +16,6 @@ export default (router: Router): void => {
     '/wallets/profile/:id',
     adapt(makeListWalletsByProfileIdController())
   )
+  router.put('/wallets/:id', adapt(makeEditWalletController()))
   // router.get('/movies/:id', adapt(makeListMovieByIdController()))
 }

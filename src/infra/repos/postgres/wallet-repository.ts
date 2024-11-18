@@ -2,19 +2,22 @@ import { PgConnection } from './helpers/connection'
 import {
   AddWallet,
   CheckTotalPriceWalletById,
+  EditWallet,
   ListWalletById,
   ListWalletsByProfileId
 } from '@/domain/contracts/repos'
 import { PgProfile, PgWallet } from './entities'
 import { RedisService } from '@/main/config/redis'
 import { Profile } from '@/domain/entities'
+import { HttpResponse } from '@/application/contracts'
 
 export class PgWalletRepository
   implements
     AddWallet,
     CheckTotalPriceWalletById,
     ListWalletsByProfileId,
-    ListWalletById
+    ListWalletById,
+    EditWallet
 {
   constructor(private readonly redisService: RedisService) {}
   async add(wallet: AddWallet.Params): Promise<AddWallet.Result> {
@@ -147,5 +150,41 @@ export class PgWalletRepository
     })) as PgWallet
 
     return wallets
+  }
+
+  async edit(
+    wallet: EditWallet.Params
+  ): Promise<EditWallet.Result | HttpResponse> {
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
+
+    const walletToEdit = (await pgWalletRepo.findOne({
+      where: {
+        id_wallet: wallet.id
+      }
+    })) as PgWallet
+
+    walletToEdit.name_wallet = wallet.name
+    walletToEdit.total_price_wallet = wallet.total_price
+    walletToEdit.description_wallet = wallet.description
+    walletToEdit.is_public = wallet.is_public
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.save(PgWallet, walletToEdit)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('wallets')
+
+    return {
+      id: walletToEdit.id_wallet,
+      statusCode: 201,
+      message: 'Carteira editada com sucesso'
+    }
   }
 }
