@@ -8,13 +8,9 @@ import {
   makeAuthenticateController,
   makeConfirmationEmailController,
   makeEditUserController,
-  makeListUserByEmailController,
   makeListUserByIdController,
-  makeListUserPageableController,
-  makeRemoveUserController,
   makeUploadImgProfileController
 } from '../factories/application/controllers'
-import { makeResetUserPasswordController } from '../factories/application/controllers/reset-user-password-controller-factory'
 
 export default (router: Router): void => {
   router.post('/users', adapt(makeAddUserController()))
@@ -29,11 +25,8 @@ export default (router: Router): void => {
     adapt(makeConfirmationEmailController())
   )
   router.put('/users/:id', adapt(makeEditUserController()))
-  router.delete('/users/:id', adapt(makeRemoveUserController()))
-  router.get('/users', adapt(makeListUserPageableController()))
-  router.get('/users/mail/:email', adapt(makeListUserByEmailController()))
-  router.put(
-    '/users/reset-password/:email',
-    adapt(makeResetUserPasswordController())
-  )
+  // router.put(
+  //   '/users/reset-password/:email',
+  //   adapt(makeResetUserPasswordController())
+  // )
 }

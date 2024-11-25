@@ -4,7 +4,7 @@ import 'reflect-metadata'
 import { env } from '@/main/config/env'
 import { API, SWAGGER } from '@/utils/constants'
 import { Request, Response } from 'express'
-import { runSeeds } from '@/infra/repos/postgres/seeds'
+// import { runSeeds } from '@/infra/repos/postgres/seeds'
 
 PgConnection.getInstance()
   .connect()
