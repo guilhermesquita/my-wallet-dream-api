@@ -1,4 +1,4 @@
-import '../../../../main/config/module-alias'
+import './config-module/module-alias'
 import { seedTest } from './seeds'
 
 export const runSeeds = async (): Promise<void> => {
@@ -10,3 +10,5 @@ export const runSeeds = async (): Promise<void> => {
     console.error('Error running seeds:', error)
   }
 }
+
+void runSeeds()
