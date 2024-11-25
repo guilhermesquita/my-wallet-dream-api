@@ -12,15 +12,17 @@ export const seedTest = async (): Promise<void> => {
   try {
     await queryRunner.startTransaction()
 
-    const teste = await queryRunner.manager.find('public.teste')
-    console.log(teste)
+    console.log('sacascsa')
 
-    //  await queryRunner.manager.insert('public.teste', [
-    //    { id: 1, name: 'Admin', email: 'admin@example.com' },
-    //    { id: 2, name: 'User', email: 'user@example.com' }
-    //  ])
+    // const teste = await queryRunner.manager.find('public.teste')
+    // console.log(teste)
 
-    await queryRunner.commitTransaction()
+    // await queryRunner.manager.insert('public.teste', [
+    //   { id: 1, name: 'Admin', email: 'admin@example.com' },
+    //   { id: 2, name: 'User', email: 'user@example.com' }
+    // ])
+
+    // await queryRunner.commitTransaction()
   } catch (error) {
     console.error('Error seeding users:', error)
     await queryRunner.rollbackTransaction()

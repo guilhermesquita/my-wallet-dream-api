@@ -8,7 +8,7 @@
     "typeorm:run": "ts-node src/infra/repos/postgres/helpers/run-migrations.ts",
     "dev": "ts-node-dev --respawn --transpile-only --clear -r dotenv/config --inspect=0.0.0.0:9229 src/main",
     "clean": "rimraf dist",
-    "seed": "ts-node ./src/infra/repos/postgres/seeds/run-seeds.ts",
+    "seed": "ts-node -r dotenv/config -r tsconfig-paths/register src/infra/repos/postgres/seeds/run-seeds",
     "build": "npm run clean && tsc -p tsconfig-build.json",
     "prepare": "husky install",
     "check": "npm-check -s -u",
