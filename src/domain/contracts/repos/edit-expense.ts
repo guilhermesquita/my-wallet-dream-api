@@ -1,13 +1,16 @@
 import { HttpResponse } from '@/application/contracts'
 
-export interface RemoveUser {
-  remove: (user: RemoveUser.Params) => Promise<RemoveUser.Result | HttpResponse>
+export interface EditExpense {
+  edit: (
+    expense: EditExpense.Params
+  ) => Promise<EditExpense.Result | HttpResponse>
 }
 
-export namespace RemoveUser {
+export namespace EditExpense {
   export type Params = {
     id: string
-    token: string
+    name: string
+    value: number
   }
   export type Result = {
     id: string

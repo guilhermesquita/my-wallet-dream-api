@@ -8,8 +8,7 @@ export class ListUserByIdController implements Controller {
   async handle(request: ListUserByIdController.Request): Promise<HttpResponse> {
     try {
       const result = (await this.listUserById.ListById({
-        id: request.id,
-        token: request.authorization
+        id: request.id
       })) as HttpResponse
       if ('statusCode' in result && result.statusCode === 204) {
         return noContent()
@@ -29,6 +28,5 @@ export class ListUserByIdController implements Controller {
 export namespace ListUserByIdController {
   export type Request = {
     id: string
-    authorization: string
   }
 }

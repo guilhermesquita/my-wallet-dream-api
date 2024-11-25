@@ -1,14 +1,14 @@
-import { run } from "./seeds"
+import './config-module/module-alias'
+import { seedWallet } from './seeds'
 
-
-export const runSeeds = async () =>{
+export const runSeeds = async (): Promise<void> => {
+  console.log('Running seeds...')
   try {
-    console.log('Running seeds...')
-    await run()
-    console.log('Seeds finished.')
+    await seedWallet()
+    console.log('All seeds executed successfully.')
   } catch (error) {
     console.error('Error running seeds:', error)
-  } 
+  }
 }
 
-runSeeds().catch((error) => console.error('Unexpected error:', error))
+void runSeeds()
