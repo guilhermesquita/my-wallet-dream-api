@@ -1,6 +1,7 @@
+import { PgWallet } from '../entities'
 import { PgConnection } from '../helpers/connection'
 
-export const seedTest = async (): Promise<void> => {
+export const seedWallet = async (): Promise<void> => {
   const connection = PgConnection.getInstance().connect()
 
   if (!connection.isInitialized) {
@@ -12,17 +13,29 @@ export const seedTest = async (): Promise<void> => {
   try {
     await queryRunner.startTransaction()
 
-    console.log('sacascsa')
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
 
-    // const teste = await queryRunner.manager.find('public.teste')
-    // console.log(teste)
+    const wallets = [
+      {
+        name_wallet: 'Walllet seed test',
+        total_price_wallet: 800,
+        fk_profile: 'd997d1c4-0108-46c7-a5db-5942e25295cb',
+        is_public: true,
+        description_wallet: 'Admin Wallet'
+      },
+      {
+        name_wallet: 'Wallet Seed Test 2',
+        total_price_wallet: 800,
+        fk_profile: 'd997d1c4-0108-46c7-a5db-5942e25295cb',
+        is_public: true,
+        description_wallet: 'Admin Wallet'
+      }
+    ] as unknown as PgWallet[]
 
-    // await queryRunner.manager.insert('public.teste', [
-    //   { id: 1, name: 'Admin', email: 'admin@example.com' },
-    //   { id: 2, name: 'User', email: 'user@example.com' }
-    // ])
-
-    // await queryRunner.commitTransaction()
+    const newWallet = pgWalletRepo.create(wallets)
+    await pgWalletRepo.save(newWallet)
   } catch (error) {
     console.error('Error seeding users:', error)
     await queryRunner.rollbackTransaction()
