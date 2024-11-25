@@ -1,51 +1,30 @@
-// import { PgMovie, PgUser } from "../entities";
-// import { PgConnection } from "../helpers";
+import { PgConnection } from '../helpers/connection'
 
-// export async function run() {
-//    const pgUserRepo = PgConnection.getInstance()
-//       .connect()
-//       .getRepository(PgUser);
+export const seedTest = async (): Promise<void> => {
+  const connection = PgConnection.getInstance().connect()
 
-//    const pgMovieRepo = PgConnection.getInstance()
-//       .connect()
-//       .getRepository(PgMovie);
+  if (!connection.isInitialized) {
+    await connection.initialize()
+  }
 
-//    const movieFind = await pgMovieRepo.find()
+  const queryRunner = connection.createQueryRunner()
 
-//    //   const users = [
-//    //     pgUserRepo.create({ nm_user: 'John Doe',
-//    //         password_user: 'password seed',
-//    //         created_at: new Date(),
-//    //         email_user: 'john.doe@example.com',
-//    //      }),
-//    //      pgUserRepo.create({ nm_user: 'Jane Doe',
-//    //         password_user: 'password seed',
-//    //         created_at: new Date(),
-//    //         email_user: 'jane.doe@example.com',
-//    //      }),
-//    //   ];
+  try {
+    await queryRunner.startTransaction()
 
-//    const movies = [
-//       pgMovieRepo.create({
-//          title_movie: 'E.T. - O Extraterrestre',
-//          description_movie: 'Um garoto faz amizade com um ser de outro planeta, que ficou sozinho na Terra, protegendo-o de todas as formas para evitar que ele seja capturado e transformado em cobaia. Gradativamente, surge entre os dois uma forte amizade.',
-//          id_movie: 'dada',
-//          image_movie: 'https://www.cnnbrasil.com.br/wp-content/uploads/sites/12/2022/10/evento-ET-40-anos-informac%CC%A7o%CC%83es.webp',
-//          director_movie: 'Steven Spielberg',
-//          year_movie: '1982',
-//       })
-//    ];
+    const teste = await queryRunner.manager.find('public.teste')
+    console.log(teste)
 
-//    const entityManager = PgConnection.getInstance().connect().createEntityManager()
+    //  await queryRunner.manager.insert('public.teste', [
+    //    { id: 1, name: 'Admin', email: 'admin@example.com' },
+    //    { id: 2, name: 'User', email: 'user@example.com' }
+    //  ])
 
-//      if (movieFind.length < 1){
-//       await pgMovieRepo.save(movies);
-//      }
-
-//    await entityManager.transaction(async manager => {
-//       let saved = await manager.save(PgMovie, pgMovieRepo);
-//       await manager.save(saved)
-//    })
-
-//    //   await pgUserRepo.save(users);
-// }
+    await queryRunner.commitTransaction()
+  } catch (error) {
+    console.error('Error seeding users:', error)
+    await queryRunner.rollbackTransaction()
+  } finally {
+    await queryRunner.release()
+  }
+}

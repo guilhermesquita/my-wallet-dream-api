@@ -1,2 +1,2 @@
-// export * from './seeds'
-// export * from './run-seeds'
+export * from './seeds'
+export * from './run-seeds'
