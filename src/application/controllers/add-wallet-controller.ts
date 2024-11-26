@@ -45,7 +45,7 @@ export class AddWalletController implements Controller {
 export namespace AddWalletController {
   export type Request = {
     name: string
-    total_price: string
+    total_price: number
     owner: string
     is_public: boolean
     description: string

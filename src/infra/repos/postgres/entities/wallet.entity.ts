@@ -20,7 +20,7 @@ export class PgWallet extends BaseEntity {
   name_wallet: string
 
   @Column()
-  total_price_wallet: string
+  total_price_wallet: number
 
   @Column()
   description_wallet: string

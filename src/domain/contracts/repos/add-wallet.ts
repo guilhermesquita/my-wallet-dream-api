@@ -8,7 +8,7 @@ export interface AddWallet {
 export namespace AddWallet {
   export type Params = {
     name: string
-    total_price: string
+    total_price: number
     owner: string | Profile
     is_public: boolean
     description: string

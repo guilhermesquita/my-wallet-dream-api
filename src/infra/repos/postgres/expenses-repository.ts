@@ -1,11 +1,18 @@
 import { HttpResponse } from '@/application/contracts'
-import { AddExpense, EditExpense } from '@/domain/contracts/repos'
+import {
+  AddExpense,
+  EditExpense,
+  ListExpensesByWallet
+} from '@/domain/contracts/repos'
 import { PgExpense, PgWallet } from './entities'
 import { UuidGenerator } from '@/infra/gateways'
 import { PgConnection } from './helpers'
 import { RedisService } from '@/main/config/redis'
+import { Expense } from '@/domain/entities'
 
-export class ExpensesRepository implements AddExpense, EditExpense {
+export class ExpensesRepository
+  implements AddExpense, EditExpense, ListExpensesByWallet
+{
   async add(
     expense: AddExpense.Params
   ): Promise<AddExpense.Result | HttpResponse> {
@@ -69,5 +76,21 @@ export class ExpensesRepository implements AddExpense, EditExpense {
       statusCode: 201,
       message: 'Carteira editada com sucesso'
     }
+  }
+
+  async listByWallet(id_wallet: number): Promise<ListExpensesByWallet.Result> {
+    const pgExpenseRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgExpense)
+
+    const expenses = (await pgExpenseRepo.find({
+      where: {
+        fk_wallet: {
+          id_wallet
+        }
+      }
+    })) as Expense[]
+
+    return expenses
   }
 }

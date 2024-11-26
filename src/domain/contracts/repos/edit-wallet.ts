@@ -8,7 +8,7 @@ export namespace EditWallet {
   export type Params = {
     id: number
     name: string
-    total_price: string
+    total_price: number
     is_public: boolean
     description: string
   }
