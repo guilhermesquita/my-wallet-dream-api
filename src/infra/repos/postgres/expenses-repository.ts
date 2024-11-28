@@ -3,7 +3,8 @@ import {
   AddExpense,
   EditExpense,
   ListExpenseById,
-  ListExpensesByWallet
+  ListExpensesByWallet,
+  RemoveExpense
 } from '@/domain/contracts/repos'
 import { PgExpense, PgWallet } from './entities'
 import { UuidGenerator } from '@/infra/gateways'
@@ -12,7 +13,12 @@ import { RedisService } from '@/main/config/redis'
 import { Expense } from '@/domain/entities'
 
 export class ExpensesRepository
-  implements AddExpense, EditExpense, ListExpensesByWallet, ListExpenseById
+  implements
+    AddExpense,
+    EditExpense,
+    ListExpensesByWallet,
+    ListExpenseById,
+    RemoveExpense
 {
   async add(
     expense: AddExpense.Params
@@ -75,7 +81,7 @@ export class ExpensesRepository
     return {
       id: expenseToEdit.id_expense,
       statusCode: 201,
-      message: 'Carteira editada com sucesso'
+      message: 'Gasto editado com sucesso'
     }
   }
 
@@ -107,5 +113,34 @@ export class ExpensesRepository
     })) as Expense
 
     return expense
+  }
+
+  async remove(id: string): Promise<RemoveExpense.Result> {
+    const pgExpenseRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgExpense)
+
+    const expenseToDelete = (await pgExpenseRepo.findOne({
+      where: {
+        id_expense: id
+      }
+    })) as PgExpense
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.remove(PgExpense, expenseToDelete)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('expenses')
+
+    return {
+      id: expenseToDelete.id_expense,
+      statusCode: 200,
+      message: 'Gasto excluído com sucesso'
+    }
   }
 }

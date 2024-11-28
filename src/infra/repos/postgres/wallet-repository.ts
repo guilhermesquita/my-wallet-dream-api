@@ -4,7 +4,8 @@ import {
   CheckTotalPriceWalletById,
   EditWallet,
   ListWalletById,
-  ListWalletsByProfileId
+  ListWalletsByProfileId,
+  RemoveWallet
 } from '@/domain/contracts/repos'
 import { PgProfile, PgWallet } from './entities'
 import { RedisService } from '@/main/config/redis'
@@ -17,7 +18,8 @@ export class PgWalletRepository
     CheckTotalPriceWalletById,
     ListWalletsByProfileId,
     ListWalletById,
-    EditWallet
+    EditWallet,
+    RemoveWallet
 {
   constructor(private readonly redisService: RedisService) {}
   async add(wallet: AddWallet.Params): Promise<AddWallet.Result> {
@@ -185,6 +187,35 @@ export class PgWalletRepository
       id: walletToEdit.id_wallet,
       statusCode: 201,
       message: 'Carteira editada com sucesso'
+    }
+  }
+
+  async remove(id: number): Promise<RemoveWallet.Result> {
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
+
+    const walletToRemove = (await pgWalletRepo.findOne({
+      where: {
+        id_wallet: id
+      }
+    })) as PgWallet
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.remove(PgWallet, walletToRemove)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('wallets')
+
+    return {
+      id: walletToRemove.id_wallet,
+      statusCode: 200,
+      message: 'Carteira removida com sucesso'
     }
   }
 }
