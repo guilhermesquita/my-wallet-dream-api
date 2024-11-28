@@ -2,6 +2,7 @@ import { HttpResponse } from '@/application/contracts'
 import {
   AddExpense,
   EditExpense,
+  ListExpenseById,
   ListExpensesByWallet
 } from '@/domain/contracts/repos'
 import { PgExpense, PgWallet } from './entities'
@@ -11,7 +12,7 @@ import { RedisService } from '@/main/config/redis'
 import { Expense } from '@/domain/entities'
 
 export class ExpensesRepository
-  implements AddExpense, EditExpense, ListExpensesByWallet
+  implements AddExpense, EditExpense, ListExpensesByWallet, ListExpenseById
 {
   async add(
     expense: AddExpense.Params
@@ -92,5 +93,19 @@ export class ExpensesRepository
     })) as Expense[]
 
     return expenses
+  }
+
+  async listById(id: string): Promise<ListExpenseById.Result> {
+    const pgExpenseRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgExpense)
+
+    const expense = (await pgExpenseRepo.findOne({
+      where: {
+        id_expense: id
+      }
+    })) as Expense
+
+    return expense
   }
 }
