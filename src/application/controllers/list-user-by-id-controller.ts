@@ -1,6 +1,6 @@
 import { ListUserById } from '@/domain/contracts/repos'
 import { Controller, HttpResponse } from '../contracts'
-import { noContent, ok, serverError, unauthorized } from '../helpers'
+import { noContent, ok, serverError } from '../helpers'
 
 export class ListUserByIdController implements Controller {
   constructor(private readonly listUserById: ListUserById) {}
@@ -14,9 +14,9 @@ export class ListUserByIdController implements Controller {
         return noContent()
       }
 
-      if ('statusCode' in result && result.statusCode === 401) {
-        return unauthorized()
-      }
+      // if ('statusCode' in result && result.statusCode === 401) {
+      //   return unauthorized()
+      // }
 
       return ok(result)
     } catch (error: any) {

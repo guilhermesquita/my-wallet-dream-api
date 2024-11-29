@@ -15,7 +15,7 @@ export class RedisService extends IORedis {
     })
 
     super.on('connect', () => {
-      console.log('Redis connected!')
+      // console.log('Redis connected!')
     })
   }
 }

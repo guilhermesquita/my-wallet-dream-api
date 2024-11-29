@@ -1,25 +1,24 @@
 // import { notAcceptable } from '@/application/helpers'
-import { EditUser, ListUserById } from '../contracts/repos'
+import { notAcceptable } from '@/application/helpers'
+import { CheckUserById, EditUser } from '../contracts/repos'
 import { HttpResponse } from '@/application/contracts'
 
 export class DbEditUser implements EditUser {
   constructor(
     private readonly EditUser: EditUser,
-    private readonly checkUserExistsById: ListUserById
+    private readonly checkUserExistsById: CheckUserById
   ) {}
 
   async edit(user: EditUser.Params): Promise<EditUser.Result | HttpResponse> {
-    // let idExists = false
+    let idExists = false
 
-    // ;(await this.checkUserExistsById.ListById({
-    //   id: user.id
-    // }))
-    //   ? (idExists = true)
-    //   : (idExists = false)
+    const checkUser = await this.checkUserExistsById.CheckById(user.id)
 
-    // if (!idExists) {
-    //   return notAcceptable('Usuário não encontrado')
-    // }
+    checkUser ? (idExists = true) : (idExists = false)
+
+    if (!idExists) {
+      return notAcceptable('Usuário não encontrado')
+    }
 
     return await this.EditUser.edit(user)
   }

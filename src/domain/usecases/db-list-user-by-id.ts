@@ -1,29 +1,17 @@
-import { JwtTokenHandler } from '@/infra/gateways'
-import { ListUserById } from '../contracts/repos'
+import { noContent } from '@/application/helpers'
+import { CheckUserById, ListUserById } from '../contracts/repos'
 
 export class DbListUserById implements ListUserById {
   constructor(
     private readonly ListUserById: ListUserById,
-    private readonly jwtTokenHandler: JwtTokenHandler
+    private readonly checkUserById: CheckUserById
   ) {}
 
   async ListById(user: ListUserById.Params): Promise<ListUserById.Result> {
-    // if (!user.token) {
-    //   return forbidden(new AccessDeniedError())
-    // }
-
-    // const checkById = await this.ListUserById.ListById(user)
-    // if (!checkById) {
-    //   return noContent()
-    // }
-
-    // const auth = user.token.split(' ')[1]
-    // const idValidate = await this.jwtTokenHandler.validate({ token: auth })
-
-    // if (!this.ListUserById.ListById({ id: idValidate, token: auth })) {
-    //   return unauthorized()
-    // }
-
+    const checkById = await this.checkUserById.CheckById(user.id)
+    if (!checkById) {
+      return noContent()
+    }
     return await this.ListUserById.ListById(user)
   }
 }

@@ -9,5 +9,5 @@ export namespace ListUserById {
   export type Params = {
     id: string
   }
-  export type Result = User | boolean | HttpResponse
+  export type Result = User | HttpResponse
 }

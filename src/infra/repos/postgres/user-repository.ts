@@ -8,7 +8,8 @@ import {
   ConfirmationEmail,
   UploadImageProfile,
   ListUserById,
-  EditUser
+  EditUser,
+  CheckUserById
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
@@ -27,7 +28,8 @@ export class PgUserRepository
     Authenticate,
     UploadImageProfile,
     ListUserById,
-    EditUser
+    EditUser,
+    CheckUserById
 {
   // ListUserById,
   // RemoveUser,
@@ -96,8 +98,13 @@ export class PgUserRepository
     })) as PgUser
 
     userToEdit.email_user = user.email || userToEdit.email_user
+
+    let hashManager: HashManager | undefined
+    user.password && (hashManager = new HashManager())
+    const hashedPassword = await hashManager?.hash(user.password)
+
     userToEdit.encripyted_password_user =
-      user.password || userToEdit.encripyted_password_user
+      hashedPassword ?? userToEdit.encripyted_password_user
 
     const profileToEdit = (await pgProfileRepo.findOne({
       where: {
@@ -136,6 +143,22 @@ export class PgUserRepository
     }
   }
 
+  async CheckById(id: string): Promise<CheckUserById.Result> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+
+    const user = await pgUserRepo.findOne({
+      where: {
+        id_user: id
+      }
+    })
+
+    let result: boolean = false
+    user && (result = true)
+    return result
+  }
+
   async ListById(user: ListUserById.Params): Promise<PgUser> {
     const pgUserRepo = PgConnection.getInstance()
       .connect()
@@ -144,23 +167,16 @@ export class PgUserRepository
     const idUser = user.id
     const cachedUsers = await this.redisService.get('users')
 
-    if (!cachedUsers) {
+    if (cachedUsers === null) {
       const users = await pgUserRepo.find({
         relations: {
-          fk_identify_profile: {
-            wallets: true
-          }
-        },
-        where: {
-          fk_identify_profile: {
-            wallets: {
-              is_public: true
-            }
-          }
+          fk_identify_profile: true
         }
       })
 
-      const userFindById = users.find(user => user.id_user === idUser)
+      const userFindById = users.find(
+        user => user.id_user === 'ee5c27b4-8211-4a8b-ad65-1af144948a86'
+      )
 
       await this.redisService.set('users', JSON.stringify(users))
       return userFindById as PgUser

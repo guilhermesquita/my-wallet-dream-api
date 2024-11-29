@@ -4,8 +4,7 @@ import * as yup from 'yup'
 
 export const makeAuthenticateValidation = (): Validation => {
   const schema = yup.object().shape({
-    // name: yup.string().required(),
-    email: yup.string().email().required(),
+    email: yup.string().email('invalid email').required(),
     password: yup
       .string()
       .required()
