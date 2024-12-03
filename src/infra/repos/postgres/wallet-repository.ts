@@ -2,6 +2,7 @@ import { PgConnection } from './helpers/connection'
 import {
   AddWallet,
   CheckTotalPriceWalletById,
+  CheckWalletByNameAndOwner,
   EditWallet,
   ListWalletById,
   ListWalletsByProfileId,
@@ -19,7 +20,8 @@ export class PgWalletRepository
     ListWalletsByProfileId,
     ListWalletById,
     EditWallet,
-    RemoveWallet
+    RemoveWallet,
+    CheckWalletByNameAndOwner
 {
   constructor(private readonly redisService: RedisService) {}
   async add(wallet: AddWallet.Params): Promise<AddWallet.Result> {
@@ -217,5 +219,30 @@ export class PgWalletRepository
       statusCode: 200,
       message: 'Carteira removida com sucesso'
     }
+  }
+
+  async checkByName(
+    params: CheckWalletByNameAndOwner.Params
+  ): Promise<CheckWalletByNameAndOwner.Result> {
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
+
+    const { name, owner } = params
+
+    const wallet = await pgWalletRepo.findOne({
+      where: {
+        name_wallet: name,
+        fk_profile: {
+          id_profile: owner
+        }
+      }
+    })
+
+    if (wallet) {
+      return true
+    }
+
+    return false
   }
 }

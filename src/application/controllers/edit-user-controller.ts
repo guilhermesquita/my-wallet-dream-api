@@ -26,10 +26,6 @@ export class EditUserController implements Controller {
         return notAcceptable(result.message)
       }
 
-      //   if ('statusCode' in result && result.statusCode === 401) {
-      //     return unauthorized()
-      //   }
-
       return created(result)
     } catch (error: any) {
       return serverError(error)

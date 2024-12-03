@@ -1,5 +1,11 @@
 import { AddWallet } from '@/domain/contracts/repos'
-import { badRequest, created, serverError, unauthorized } from '../helpers'
+import {
+  badRequest,
+  conflict,
+  created,
+  notAcceptable,
+  serverError
+} from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
 
 export class AddWalletController implements Controller {
@@ -31,8 +37,13 @@ export class AddWalletController implements Controller {
         token: authorization
       })
 
-      if ('statusCode' in result && result.statusCode === 401) {
-        return unauthorized()
+      if ('statusCode' in result && result.statusCode === 406) {
+        return notAcceptable('usuário não encontrado!')
+      }
+
+      if ('statusCode' in result && result.statusCode === 409) {
+        // console.log(result instanceof notAcceptable)
+        return conflict('Carteira com nome')
       }
 
       return created(result)
