@@ -37,10 +37,6 @@ export class EditWalletController implements Controller {
         return conflict('Carteira com nome')
       }
 
-      //   if ('statusCode' in result && result.statusCode === 401) {
-      //     return unauthorized()
-      //   }
-
       return created(result)
     } catch (error: any) {
       return serverError(error)
