@@ -10,7 +10,7 @@ export class RemoveWalletController implements Controller {
       const result = await this.removeWallet.remove(id)
 
       if ('statusCode' in result && result.statusCode === 406) {
-        return notAcceptable(result.message)
+        return notAcceptable('Carteira não encontrada')
       }
 
       return ok(result)

@@ -15,7 +15,7 @@ export class ListWalletsByProfileIdController implements Controller {
         request.id
       )) as HttpResponse
       if ('statusCode' in result && result.statusCode === 204) {
-        return noContent()
+        return noContent('Usuário não encontrado')
       }
 
       return ok(result)
