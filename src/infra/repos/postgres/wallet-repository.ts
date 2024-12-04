@@ -132,7 +132,8 @@ export class PgWalletRepository
     if (!cachedWallets) {
       const wallets = await pgWalletRepo.find({
         relations: {
-          expenses: true
+          expenses: true,
+          fk_profile: true
         }
       })
 
@@ -146,7 +147,8 @@ export class PgWalletRepository
 
     const wallets = (await pgWalletRepo.findOne({
       relations: {
-        expenses: true
+        expenses: true,
+        fk_profile: true
       },
       where: {
         id_wallet: idWallet

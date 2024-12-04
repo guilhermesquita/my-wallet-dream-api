@@ -1,4 +1,10 @@
-import { badRequest, created, notAcceptable, serverError } from '../helpers'
+import {
+  badRequest,
+  conflict,
+  created,
+  notAcceptable,
+  serverError
+} from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
 import { EditWallet } from '@/domain/contracts/repos'
 
@@ -24,7 +30,11 @@ export class EditWalletController implements Controller {
       })
 
       if ('statusCode' in result && result.statusCode === 406) {
-        return notAcceptable(result.message)
+        return notAcceptable('Carteira não encontrada')
+      }
+
+      if ('statusCode' in result && result.statusCode === 409) {
+        return conflict('Carteira com nome')
       }
 
       //   if ('statusCode' in result && result.statusCode === 401) {
@@ -42,7 +52,7 @@ export namespace EditWalletController {
   export type Request = {
     id: number
     name: string
-    total_price: string
+    total_price: number
     is_public: boolean
     description: string
   }
