@@ -1,5 +1,5 @@
 import { RemoveWallet } from '@/domain/contracts/repos'
-import { ok, serverError } from '../helpers'
+import { notAcceptable, ok, serverError } from '../helpers'
 import { Controller, HttpResponse } from '../contracts'
 
 export class RemoveWalletController implements Controller {
@@ -9,13 +9,9 @@ export class RemoveWalletController implements Controller {
       const { id } = request
       const result = await this.removeWallet.remove(id)
 
-      //   if ('statusCode' in result && result.statusCode === 406) {
-      //     return notAcceptable(result.message)
-      //   }
-
-      //   if ('statusCode' in result && result.statusCode === 401) {
-      //     return unauthorized()
-      //   }
+      if ('statusCode' in result && result.statusCode === 406) {
+        return notAcceptable(result.message)
+      }
 
       return ok(result)
     } catch (error: any) {

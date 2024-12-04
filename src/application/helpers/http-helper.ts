@@ -24,7 +24,7 @@ export const forbidden = (error: Error): HttpResponse => ({
   body: error.message
 })
 
-export const notAcceptable = (error: string): HttpResponse => ({
+export const notAcceptable = (error?: string): HttpResponse => ({
   statusCode: 406,
   message: 'Algo não encontrado',
   body: error

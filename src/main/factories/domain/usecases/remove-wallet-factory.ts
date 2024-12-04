@@ -5,5 +5,5 @@ import { RedisService } from '@/main/config/redis'
 
 export const makeDbRemoveWallet = (): RemoveWallet => {
   const pgWalletRepo = new PgWalletRepository(new RedisService())
-  return new DbRemoveWallet(pgWalletRepo)
+  return new DbRemoveWallet(pgWalletRepo, pgWalletRepo)
 }
