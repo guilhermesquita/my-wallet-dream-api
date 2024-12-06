@@ -11,7 +11,7 @@ export class ListExpensesByWalletController implements Controller {
       request.walletId
     )
 
-    if ('statusCode' in result && result.statusCode === 204) {
+    if ('statusCode' in result && result.statusCode === 406) {
       const message = result
       return notAcceptable(message.body)
     }

@@ -1,5 +1,7 @@
+import { HttpResponse } from '@/application/contracts'
+
 export interface RemoveExpense {
-  remove: (id: string) => Promise<RemoveExpense.Result>
+  remove: (id: string) => Promise<RemoveExpense.Result | HttpResponse>
 }
 
 export namespace RemoveExpense {

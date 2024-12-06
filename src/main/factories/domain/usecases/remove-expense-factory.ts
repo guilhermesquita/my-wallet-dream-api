@@ -4,5 +4,5 @@ import { ExpensesRepository } from '@/infra/repos/postgres'
 
 export const makeDbRemoveExpense = (): RemoveExpense => {
   const pgExpenseRepo = new ExpensesRepository()
-  return new DbRemoveExpense(pgExpenseRepo)
+  return new DbRemoveExpense(pgExpenseRepo, pgExpenseRepo)
 }

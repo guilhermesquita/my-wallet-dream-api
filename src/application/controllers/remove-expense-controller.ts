@@ -1,5 +1,5 @@
 import { RemoveExpense } from '@/domain/contracts/repos'
-import { ok, serverError } from '../helpers'
+import { notAcceptable, ok, serverError } from '../helpers'
 import { Controller, HttpResponse } from '../contracts'
 
 export class RemoveExpenseController implements Controller {
@@ -11,9 +11,10 @@ export class RemoveExpenseController implements Controller {
       const { id } = request
       const result = await this.removeExpense.remove(id)
 
-      //   if ('statusCode' in result && result.statusCode === 406) {
-      //     return notAcceptable(result.message)
-      //   }
+      if ('statusCode' in result && result.statusCode === 406) {
+        const message = result as HttpResponse
+        return notAcceptable(message.body)
+      }
 
       //   if ('statusCode' in result && result.statusCode === 401) {
       //     return unauthorized()
