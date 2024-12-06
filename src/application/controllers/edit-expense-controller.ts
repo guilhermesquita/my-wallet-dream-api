@@ -1,4 +1,10 @@
-import { badRequest, created, notAcceptable, serverError } from '../helpers'
+import {
+  badRequest,
+  created,
+  noContent,
+  notAcceptable,
+  serverError
+} from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
 import { EditExpense } from '@/domain/contracts/repos'
 
@@ -21,13 +27,14 @@ export class EditExpenseController implements Controller {
         value
       })
 
-      if ('statusCode' in result && result.statusCode === 406) {
-        return notAcceptable(result.message)
+      if ('statusCode' in result && result.statusCode === 201) {
+        return noContent('Gasto não encontrado')
       }
 
-      //   if ('statusCode' in result && result.statusCode === 401) {
-      //     return unauthorized()
-      //   }
+      if ('statusCode' in result && result.statusCode === 406) {
+        const message = result as HttpResponse
+        return notAcceptable(message.body)
+      }
 
       return created(result)
     } catch (error: any) {
