@@ -16,7 +16,11 @@ import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
 import { HashManager } from '@/infra/gateways/hash-manager'
 import { RedisService } from '@/main/config/redis'
-import { r2 } from '@/main/config/cloudflare-s3'
+import {
+  deleteObjectCommand,
+  putObjectCommand,
+  r2
+} from '@/main/config/cloudflare-s3'
 import { sendEmail } from '@/main/config/nodemailer'
 import { HttpResponse } from '@/application/contracts'
 
@@ -294,7 +298,12 @@ export class PgUserRepository
           Key: currentImageKey
         }
 
-        await r2.deleteObject(deleteParams).promise()
+        try {
+          const command = deleteObjectCommand(deleteParams)
+          await r2.send(command)
+        } catch (error) {
+          console.error('Error deleting object:', error)
+        }
       }
     }
 
@@ -305,10 +314,13 @@ export class PgUserRepository
       ContentType: params.img_profile.mimetype
     }
 
-    const data = await r2.upload(params1).promise()
-    fs.unlinkSync(params.img_profile.path)
-
-    uploadImageProfile.img_profile = `https://pub-d575c6b3e1654ffe98fbc926a91ae6a6.r2.dev/my-wallet-dream/${data.Key}`
+    try {
+      const command = putObjectCommand(params1)
+      await r2.send(command)
+      uploadImageProfile.img_profile = `${process.env.URL_BUCKET}/${params1.Key}`
+    } catch (error) {
+      console.error('Error uploading object:', error)
+    }
 
     const entityManager = PgConnection.getInstance()
       .connect()
