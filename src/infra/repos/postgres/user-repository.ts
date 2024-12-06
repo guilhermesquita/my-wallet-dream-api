@@ -317,7 +317,9 @@ export class PgUserRepository
     try {
       const command = putObjectCommand(params1)
       await r2.send(command)
-      uploadImageProfile.img_profile = `${process.env.URL_BUCKET}/${params1.Key}`
+      uploadImageProfile.img_profile = `${process.env.PUBLIC_IMAGE}/${params1.Key}`
+
+      await fs.promises.unlink(params.img_profile.path)
     } catch (error) {
       console.error('Error uploading object:', error)
     }
