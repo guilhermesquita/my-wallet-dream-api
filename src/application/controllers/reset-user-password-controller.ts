@@ -1,10 +1,11 @@
 // import { ResetUserPassword } from '@/domain/contracts/repos'
-import { badRequest, ok, serverError } from '../helpers'
+import { badRequest, created, notAcceptable, serverError } from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
+import { ResetUserPassword } from '@/domain/contracts/repos'
 
 export class ResetUserPasswordController implements Controller {
   constructor(
-    // private readonly resetUserPassword: ResetUserPassword,
+    private readonly resetUserPassword: ResetUserPassword,
     private readonly validation: Validation
   ) {}
 
@@ -16,10 +17,13 @@ export class ResetUserPasswordController implements Controller {
       if (erro) {
         return badRequest(erro)
       }
-      //   const { password, email } = request
-      // //   const result = await this.resetUserPassword.reset({ password, email })
-      //   return created(result)
-      return ok('dads')
+      const { password, email } = request
+      const result = await this.resetUserPassword.reset({ password, email })
+      if ('statusCode' in result && result.statusCode === 406) {
+        const message = result as HttpResponse
+        return notAcceptable(message.body)
+      }
+      return created(result)
     } catch (error: any) {
       return serverError(error)
     }

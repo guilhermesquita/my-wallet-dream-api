@@ -9,6 +9,7 @@ import {
   makeConfirmationEmailController,
   makeEditUserController,
   makeListUserByIdController,
+  makeResetUserPasswordController,
   makeUploadImgProfileController
 } from '../factories/application/controllers'
 
@@ -25,8 +26,8 @@ export default (router: Router): void => {
     adapt(makeConfirmationEmailController())
   )
   router.put('/users/:id', adapt(makeEditUserController()))
-  // router.put(
-  //   '/users/reset-password/:email',
-  //   adapt(makeResetUserPasswordController())
-  // )
+  router.patch(
+    '/users/reset-password/:email',
+    adapt(makeResetUserPasswordController())
+  )
 }
