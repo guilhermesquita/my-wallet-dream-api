@@ -1,6 +1,6 @@
 import { ListExpensesByWallet } from '@/domain/contracts/repos'
 import { Controller, HttpResponse } from '../contracts'
-import { ok } from '../helpers'
+import { notAcceptable, ok } from '../helpers'
 
 export class ListExpensesByWalletController implements Controller {
   constructor(readonly listExpensesByWallet: ListExpensesByWallet) {}
@@ -10,6 +10,11 @@ export class ListExpensesByWalletController implements Controller {
     const result = await this.listExpensesByWallet.listByWallet(
       request.walletId
     )
+
+    if ('statusCode' in result && result.statusCode === 204) {
+      const message = result
+      return notAcceptable(message.body)
+    }
 
     return ok(result)
   }
