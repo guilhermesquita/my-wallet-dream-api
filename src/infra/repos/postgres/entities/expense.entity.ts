@@ -12,6 +12,9 @@ export class PgExpense {
   @Column()
   value_expense: number
 
+  @Column()
+  paid_expense: boolean
+
   @ManyToOne(() => PgWallet, wallet => wallet.expenses)
   @JoinColumn({ name: 'fk_wallet' })
   fk_wallet: PgWallet

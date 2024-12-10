@@ -5,4 +5,5 @@ export class Expense {
   name_expense: string
   value_expense: number
   fk_wallet: Wallet
+  paid_expense: boolean
 }

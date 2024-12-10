@@ -5,14 +5,15 @@ import { env } from '@/main/config/env'
 import { API, SWAGGER } from '@/utils/constants'
 import { Request, Response } from 'express'
 import { runMigrations } from '@/infra/repos/postgres/helpers/run-migrations'
+import { resetPaidExpensesJob } from './jobs/resetPaidExpensesJob'
 // import { runSeeds } from '@/infra/repos/postgres/seeds'
 
 const pgConnection = PgConnection.getInstance().connect()
+resetPaidExpensesJob()
 
 pgConnection
   .initialize()
   .then(async () => {
-    // Executar migrations após garantir que a conexão foi inicializada
     await runMigrations()
     // await runSeeds()
 

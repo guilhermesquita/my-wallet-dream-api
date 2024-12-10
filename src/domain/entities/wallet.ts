@@ -7,5 +7,6 @@ export class Wallet {
   total_price_wallet: number
   fk_profile: Profile
   is_public: boolean
+  payment_day_wallet: number
   created_at: Date
 }

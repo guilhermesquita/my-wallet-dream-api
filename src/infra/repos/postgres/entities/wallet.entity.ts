@@ -26,6 +26,9 @@ export class PgWallet extends BaseEntity {
   description_wallet: string
 
   @Column()
+  payment_day_wallet: number
+
+  @Column()
   is_public: boolean
 
   @ManyToOne(() => PgProfile, profile => profile.wallets)
