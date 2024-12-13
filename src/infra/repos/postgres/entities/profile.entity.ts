@@ -1,6 +1,7 @@
 import { Column, Entity, OneToMany, OneToOne, PrimaryColumn } from 'typeorm'
 import { PgUser } from './user.entity'
 import { PgWallet } from './wallet.entity'
+import { PgDream } from './dream.entity'
 
 @Entity({ schema: 'public', name: 'tbl_profiles' })
 export class PgProfile {
@@ -18,4 +19,7 @@ export class PgProfile {
 
   @OneToMany(() => PgWallet, wallet => wallet.fk_profile)
   wallets: PgWallet[]
+
+  @OneToMany(() => PgDream, dream => dream.fk_profile)
+  dreams: PgDream[]
 }
