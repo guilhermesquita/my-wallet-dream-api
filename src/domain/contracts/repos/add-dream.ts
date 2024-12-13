@@ -1,7 +1,8 @@
+import { HttpResponse } from '@/application/contracts'
 import { Profile } from '@/domain/entities'
 
 export interface AddDream {
-  add: (dream: AddDream.params) => Promise<AddDream.result>
+  add: (dream: AddDream.params) => Promise<AddDream.result | HttpResponse>
 }
 
 export namespace AddDream {

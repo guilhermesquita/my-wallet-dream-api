@@ -1,9 +1,10 @@
 import { AddDream } from '@/domain/contracts/repos'
 import { DbAddDream } from '@/domain/usecases'
-import { DreamRepository } from '@/infra/repos/postgres'
+import { DreamRepository, PgUserRepository } from '@/infra/repos/postgres'
+import { RedisService } from '@/main/config/redis'
 
 export const makeDbAddDream = (): AddDream => {
   const dreamRepository = new DreamRepository()
-  //   const walletRepository = new PgWalletRepository(new RedisService())
-  return new DbAddDream(dreamRepository)
+  const userRepository = new PgUserRepository(new RedisService())
+  return new DbAddDream(dreamRepository, userRepository)
 }

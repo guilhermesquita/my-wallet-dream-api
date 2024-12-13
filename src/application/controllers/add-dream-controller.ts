@@ -1,6 +1,6 @@
 import { AddDream } from '@/domain/contracts/repos'
 import { Controller, HttpResponse, Validation } from '../contracts'
-import { badRequest, ok, serverError } from '../helpers'
+import { badRequest, notAcceptable, ok, serverError } from '../helpers'
 
 export class AddDreamController implements Controller {
   constructor(
@@ -15,6 +15,11 @@ export class AddDreamController implements Controller {
         return badRequest(erro)
       }
       const result = await this.addDream.add(request)
+
+      if ('statusCode' in result && result.statusCode === 406) {
+        const message = result as HttpResponse
+        return notAcceptable(message.body)
+      }
       return ok(result)
     } catch (error: any) {
       return serverError(error.message)
