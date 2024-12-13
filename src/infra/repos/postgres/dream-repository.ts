@@ -1,10 +1,11 @@
-import { AddDream } from '@/domain/contracts/repos'
+import { AddDream, ListDreamsByProfileId } from '@/domain/contracts/repos'
 import { PgDream, PgProfile } from './entities'
 import { UuidGenerator } from '@/infra/gateways'
 import { PgConnection } from './helpers'
 import { RedisService } from '@/main/config/redis'
+import { Dream } from '@/domain/entities'
 
-export class DreamRepository implements AddDream {
+export class DreamRepository implements AddDream, ListDreamsByProfileId {
   async add(dream: AddDream.params): Promise<AddDream.result> {
     const pgDreamRepo = new PgDream()
 
@@ -34,5 +35,21 @@ export class DreamRepository implements AddDream {
       statusCode: 201,
       message: 'Dream criado com sucesso'
     }
+  }
+
+  async listAll(idUser: string): Promise<ListDreamsByProfileId.Result> {
+    const pgDreamRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgDream)
+
+    const dreams = (await pgDreamRepo.find({
+      where: {
+        fk_profile: {
+          id_profile: idUser
+        }
+      }
+    })) as Dream[]
+
+    return dreams
   }
 }
