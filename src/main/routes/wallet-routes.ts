@@ -6,8 +6,6 @@ import {
   makeListWalletByIdController,
   makeListWalletsByProfileIdController,
   makeRemoveWalletController
-  // makeListMovieAllController,
-  // makeListMovieByIdController
 } from '../factories/application/controllers'
 
 export default (router: Router): void => {
@@ -19,5 +17,4 @@ export default (router: Router): void => {
     adapt(makeListWalletsByProfileIdController())
   )
   router.put('/wallets/:id', adapt(makeEditWalletController()))
-  // router.get('/movies/:id', adapt(makeListMovieByIdController()))
 }
