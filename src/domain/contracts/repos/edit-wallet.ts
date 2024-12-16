@@ -8,6 +8,7 @@ export namespace EditWallet {
   export type Params = {
     id: number
     name: string
+    payment_day: number
     total_price: number
     is_public: boolean
     description: string

@@ -13,6 +13,7 @@ export namespace AddWallet {
     is_public: boolean
     description: string
     token: string
+    payment_day: number
   }
   export type Result = {
     id: number

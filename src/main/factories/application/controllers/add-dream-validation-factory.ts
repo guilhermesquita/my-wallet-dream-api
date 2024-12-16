@@ -10,7 +10,7 @@ export const makeAddDreamValidation = (): Validation => {
       .number()
       .positive('Somente números positivos')
       .min(1, 'O número deve ser no mínimo 1')
-      .max(12, 'O número deve ser no máximo 12')
+      .max(24, 'O número deve ser no máximo 12')
       .required('Campo obrigatório'),
     fk_profile: yup.string().required()
   })

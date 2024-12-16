@@ -31,6 +31,7 @@ export class PgWalletRepository
     pgWalletRepo.is_public = wallet.is_public
     pgWalletRepo.name_wallet = wallet.name
     pgWalletRepo.total_price_wallet = wallet.total_price
+    pgWalletRepo.payment_day_wallet = wallet.payment_day
     pgWalletRepo.fk_profile = wallet.owner as PgProfile
 
     const entityManager = PgConnection.getInstance()
@@ -171,10 +172,14 @@ export class PgWalletRepository
       }
     })) as PgWallet
 
-    walletToEdit.name_wallet = wallet.name
-    walletToEdit.total_price_wallet = wallet.total_price
-    walletToEdit.description_wallet = wallet.description
-    walletToEdit.is_public = wallet.is_public
+    walletToEdit.name_wallet = wallet.name || walletToEdit.name_wallet
+    walletToEdit.total_price_wallet =
+      wallet.total_price || walletToEdit.total_price_wallet
+    walletToEdit.description_wallet =
+      wallet.description || walletToEdit.description_wallet
+    walletToEdit.payment_day_wallet =
+      wallet.payment_day || walletToEdit.payment_day_wallet
+    walletToEdit.is_public = wallet.is_public || walletToEdit.is_public
 
     const entityManager = PgConnection.getInstance()
       .connect()

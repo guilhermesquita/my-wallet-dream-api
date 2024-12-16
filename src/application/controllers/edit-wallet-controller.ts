@@ -20,13 +20,15 @@ export class EditWalletController implements Controller {
       if (erro) {
         return badRequest(erro)
       }
-      const { id, name, total_price, is_public, description } = request
+      const { id, name, total_price, is_public, description, payment_day } =
+        request
       const result = await this.editWallet.edit({
         id,
         name,
         total_price,
         is_public,
-        description
+        description,
+        payment_day
       })
 
       if ('statusCode' in result && result.statusCode === 406) {
@@ -50,6 +52,7 @@ export namespace EditWalletController {
     name: string
     total_price: number
     is_public: boolean
+    payment_day: number
     description: string
   }
 }

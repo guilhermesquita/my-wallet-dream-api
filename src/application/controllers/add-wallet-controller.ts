@@ -26,7 +26,8 @@ export class AddWalletController implements Controller {
         owner,
         is_public,
         description,
-        authorization
+        authorization,
+        payment_day
       } = request
       const result = await this.addWallet.add({
         name,
@@ -34,6 +35,7 @@ export class AddWalletController implements Controller {
         owner,
         description,
         is_public,
+        payment_day,
         token: authorization
       })
 
@@ -61,5 +63,6 @@ export namespace AddWalletController {
     is_public: boolean
     description: string
     authorization: string
+    payment_day: number
   }
 }
