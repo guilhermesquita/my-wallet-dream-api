@@ -1,15 +1,19 @@
-import { PgUserRepository } from '@/infra/repos/postgres'
+import { PgUserRepository, PgWalletRepository } from '@/infra/repos/postgres'
 import { RedisService } from '../config/redis'
-import { DbListUserById } from '@/domain/usecases'
+import { DbListUserById, DbListWalletById } from '@/domain/usecases'
+import { Wallet } from '@/domain/entities'
 
 const pgUserRepository = new PgUserRepository(new RedisService())
+const pgWalletRepository = new PgWalletRepository(new RedisService())
 const dbListUserById = new DbListUserById(pgUserRepository, pgUserRepository)
+const dbListWalletById = new DbListWalletById(pgWalletRepository)
 
 interface validationTokenParams {
-  id: string
+  id: string | number
   url: string
   method: string
   tokenPayload: string
+  profileId?: string
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -18,6 +22,12 @@ export const getUserByToken = async (id: string) => {
     id
   })
   return user
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const verifyOwnerWallet = async (id: number) => {
+  const wallet = await dbListWalletById.ListById(id)
+  return wallet
 }
 
 export const validationsTokenUser = async ({
@@ -51,6 +61,40 @@ export const validationsTokenUser = async ({
   if (url.includes('/api/users/email')) {
     if (tokenPayload !== id) {
       return (valid = false)
+    }
+  }
+
+  return valid
+}
+
+export const validationsTokenWallet = async ({
+  id,
+  tokenPayload,
+  url,
+  method,
+  profileId
+}: validationTokenParams): Promise<boolean> => {
+  let valid = true
+
+  const wallet = (await verifyOwnerWallet(id as number)) as Wallet
+
+  if (url.includes('/api/wallets/')) {
+    switch (method) {
+      case 'POST':
+        if (tokenPayload !== profileId) {
+          valid = false
+        }
+        break
+      case 'PUT':
+        if (tokenPayload !== wallet.fk_profile.id_profile) {
+          valid = false
+        }
+        break
+      case 'DELETE':
+        if (tokenPayload !== wallet.fk_profile.id_profile) {
+          valid = false
+        }
+        break
     }
   }
 

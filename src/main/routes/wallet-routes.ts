@@ -7,14 +7,16 @@ import {
   makeListWalletsByProfileIdController,
   makeRemoveWalletController
 } from '../factories/application/controllers'
+import { auth } from '../middlewares'
 
 export default (router: Router): void => {
-  router.post('/wallets', adapt(makeAddWalletController()))
-  router.get('/wallets/:id', adapt(makeListWalletByIdController()))
-  router.delete('/wallets/:id', adapt(makeRemoveWalletController()))
+  router.post('/wallets', auth, adapt(makeAddWalletController()))
+  router.get('/wallets/:id', auth, adapt(makeListWalletByIdController())) // TRABALHAR LÓGICA DEPOIS
+  router.delete('/wallets/:id', auth, adapt(makeRemoveWalletController()))
   router.get(
     '/wallets/profile/:id',
-    adapt(makeListWalletsByProfileIdController())
+    auth,
+    adapt(makeListWalletsByProfileIdController()) // TRABALHAR LÓGICA DEPOIS
   )
-  router.put('/wallets/:id', adapt(makeEditWalletController()))
+  router.put('/wallets/:id', auth, adapt(makeEditWalletController()))
 }
