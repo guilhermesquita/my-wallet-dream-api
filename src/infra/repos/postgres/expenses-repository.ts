@@ -4,6 +4,7 @@ import {
   EditExpense,
   ListExpenseById,
   ListExpensesByWallet,
+  PaymentExpense,
   RemoveExpense
 } from '@/domain/contracts/repos'
 import { PgExpense, PgWallet } from './entities'
@@ -18,7 +19,8 @@ export class ExpensesRepository
     EditExpense,
     ListExpensesByWallet,
     ListExpenseById,
-    RemoveExpense
+    RemoveExpense,
+    PaymentExpense
 {
   async add(
     expense: AddExpense.Params
@@ -141,6 +143,37 @@ export class ExpensesRepository
       id: expenseToDelete.id_expense,
       statusCode: 200,
       message: 'Gasto excluído com sucesso'
+    }
+  }
+
+  async payment(id: string): Promise<PaymentExpense.Result | HttpResponse> {
+    const pgExpenseRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgExpense)
+
+    const expenseToPay = (await pgExpenseRepo.findOne({
+      where: {
+        id_expense: id
+      }
+    })) as PgExpense
+
+    expenseToPay.paid_expense = true
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.save(PgExpense, expenseToPay)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('expenses')
+
+    return {
+      id: expenseToPay.id_expense,
+      statusCode: 200,
+      message: 'Gasto pago com sucesso'
     }
   }
 }
