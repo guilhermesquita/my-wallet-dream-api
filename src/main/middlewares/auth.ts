@@ -2,7 +2,11 @@ import { AccessDeniedError } from '@/application/errors'
 import { forbidden, unauthorized } from '@/application/helpers'
 import { JwtTokenHandler } from '@/infra/gateways'
 import { NextFunction, Request, Response } from 'express'
-import { validationsTokenUser, validationsTokenWallet } from '../adapters'
+import {
+  validationsTokenExpense,
+  validationsTokenUser,
+  validationsTokenWallet
+} from '../adapters'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const auth = async (req: Request, res: Response, next: NextFunction) => {
@@ -14,7 +18,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 
   const routeValidations: Record<string, (args: any) => Promise<boolean>> = {
     '/api/users': validationsTokenUser,
-    '/api/wallets': validationsTokenWallet
+    '/api/wallets': validationsTokenWallet,
+    '/api/expenses': validationsTokenExpense
   }
 
   const matchingRoute = Object.keys(routeValidations).find(route =>
@@ -35,7 +40,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         method,
         id: req.params.id,
         tokenPayload,
-        profileId: req.body.owner
+        profileId: req.body.owner,
+        walletId: req.body.fk_wallet
       })
 
       if (!isValid) {

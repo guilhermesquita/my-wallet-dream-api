@@ -27,11 +27,12 @@ export class EditExpenseController implements Controller {
         value
       })
 
-      if ('statusCode' in result && result.statusCode === 201) {
-        return noContent('Gasto não encontrado')
+      if (result.statusCode === 204) {
+        const errorMessage = result as HttpResponse
+        return noContent(errorMessage.body)
       }
 
-      if ('statusCode' in result && result.statusCode === 406) {
+      if (result.statusCode === 406) {
         const message = result as HttpResponse
         return notAcceptable(message.body)
       }

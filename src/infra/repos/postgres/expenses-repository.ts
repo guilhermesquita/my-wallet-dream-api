@@ -66,8 +66,8 @@ export class ExpensesRepository
       }
     })) as PgExpense
 
-    expenseToEdit.name_expense = expense.name
-    expenseToEdit.value_expense = expense.value
+    expenseToEdit.name_expense = expense.name || expenseToEdit.name_expense
+    expenseToEdit.value_expense = expense.value || expenseToEdit.value_expense
 
     const entityManager = PgConnection.getInstance()
       .connect()
@@ -111,6 +111,9 @@ export class ExpensesRepository
     const expense = (await pgExpenseRepo.findOne({
       where: {
         id_expense: id
+      },
+      relations: {
+        fk_wallet: true
       }
     })) as Expense
 

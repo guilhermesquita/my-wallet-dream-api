@@ -4,6 +4,7 @@ import {
   CheckTotalPriceWalletById,
   CheckWalletByNameAndOwner,
   EditWallet,
+  ListWalletByExpense,
   ListWalletById,
   ListWalletsByProfileId,
   RemoveWallet
@@ -21,7 +22,8 @@ export class PgWalletRepository
     ListWalletById,
     EditWallet,
     RemoveWallet,
-    CheckWalletByNameAndOwner
+    CheckWalletByNameAndOwner,
+    ListWalletByExpense
 {
   constructor(private readonly redisService: RedisService) {}
   async add(wallet: AddWallet.Params): Promise<AddWallet.Result> {
@@ -251,5 +253,25 @@ export class PgWalletRepository
     }
 
     return false
+  }
+
+  async listByExpense(id: string): Promise<ListWalletByExpense.Result> {
+    const pgWalletRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgWallet)
+
+    const wallet = (await pgWalletRepo.findOne({
+      where: {
+        expenses: {
+          id_expense: id
+        }
+      },
+      relations: {
+        expenses: true,
+        fk_profile: true
+      }
+    })) as PgWallet
+
+    return wallet
   }
 }

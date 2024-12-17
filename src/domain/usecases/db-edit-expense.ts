@@ -6,7 +6,7 @@ import {
 } from '../contracts/repos'
 import { HttpResponse } from '@/application/contracts'
 import { Expense } from '../entities'
-import { noContent, notAcceptable } from '@/application/helpers'
+import { notAcceptable } from '@/application/helpers'
 
 export class DbEditExpense implements EditExpense {
   constructor(
@@ -23,11 +23,13 @@ export class DbEditExpense implements EditExpense {
     )) as Expense
 
     if (!expenseById) {
-      return noContent()
+      return notAcceptable('Gasto inexistente')
     }
 
+    console.log(expenseById)
+
     const totalPrice = await this.checkTotalPriceWallet.check(
-      Number(expenseById.fk_wallet)
+      Number(expenseById.fk_wallet.id_wallet)
     )
 
     if (totalPrice === false) {

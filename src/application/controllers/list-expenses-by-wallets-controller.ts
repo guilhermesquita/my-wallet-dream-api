@@ -7,9 +7,7 @@ export class ListExpensesByWalletController implements Controller {
   async handle(
     request: ListExpensesByWalletController.Request
   ): Promise<HttpResponse> {
-    const result = await this.listExpensesByWallet.listByWallet(
-      request.walletId
-    )
+    const result = await this.listExpensesByWallet.listByWallet(request.id)
 
     if ('statusCode' in result && result.statusCode === 406) {
       const message = result
@@ -22,6 +20,6 @@ export class ListExpensesByWalletController implements Controller {
 
 export namespace ListExpensesByWalletController {
   export type Request = {
-    walletId: number
+    id: number
   }
 }

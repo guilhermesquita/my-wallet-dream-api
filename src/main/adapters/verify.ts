@@ -1,12 +1,17 @@
 import { PgUserRepository, PgWalletRepository } from '@/infra/repos/postgres'
 import { RedisService } from '../config/redis'
-import { DbListUserById, DbListWalletById } from '@/domain/usecases'
+import {
+  DbListUserById,
+  DbListWalletByExpense,
+  DbListWalletById
+} from '@/domain/usecases'
 import { Wallet } from '@/domain/entities'
 
 const pgUserRepository = new PgUserRepository(new RedisService())
 const pgWalletRepository = new PgWalletRepository(new RedisService())
 const dbListUserById = new DbListUserById(pgUserRepository, pgUserRepository)
 const dbListWalletById = new DbListWalletById(pgWalletRepository)
+const dbListWalletByExpense = new DbListWalletByExpense(pgWalletRepository)
 
 interface validationTokenParams {
   id: string | number
@@ -14,6 +19,7 @@ interface validationTokenParams {
   method: string
   tokenPayload: string
   profileId?: string
+  walletId?: number
 }
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -27,6 +33,12 @@ export const getUserByToken = async (id: string) => {
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 export const verifyOwnerWallet = async (id: number) => {
   const wallet = await dbListWalletById.ListById(id)
+  return wallet
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const verifyWalletExpense = async (id: string) => {
+  const wallet = await dbListWalletByExpense.listByExpense(id)
   return wallet
 }
 
@@ -96,6 +108,37 @@ export const validationsTokenWallet = async ({
         }
         break
     }
+  }
+
+  return valid
+}
+
+export const validationsTokenExpense = async ({
+  id,
+  tokenPayload,
+  url,
+  method,
+  walletId
+}: validationTokenParams): Promise<boolean> => {
+  let valid = true
+
+  const wallet = await verifyWalletExpense(id as string)
+
+  if (method === 'post') {
+    const ownerWallet = (await verifyOwnerWallet(walletId as number)) as Wallet
+    if (tokenPayload !== ownerWallet.fk_profile.id_profile) {
+      valid = false
+    }
+  }
+
+  switch (method) {
+    case 'GET':
+      break
+    default:
+      if (tokenPayload !== wallet.fk_profile.id_profile) {
+        valid = false
+      }
+      break
   }
 
   return valid

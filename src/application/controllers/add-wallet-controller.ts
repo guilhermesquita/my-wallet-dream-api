@@ -44,7 +44,6 @@ export class AddWalletController implements Controller {
       }
 
       if ('statusCode' in result && result.statusCode === 409) {
-        // console.log(result instanceof notAcceptable)
         return conflict('Carteira com nome')
       }
 

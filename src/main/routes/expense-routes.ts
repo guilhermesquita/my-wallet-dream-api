@@ -11,13 +11,13 @@ import {
 import { auth } from '../middlewares'
 
 export default (router: Router): void => {
-  router.post('/expenses', adapt(makeAddExpenseController()))
-  router.put('/expenses/:id', adapt(makeEditExpenseController()))
+  router.post('/expenses', auth, adapt(makeAddExpenseController()))
+  router.put('/expenses/:id', auth, adapt(makeEditExpenseController()))
   router.get('/expenses/:id', auth, adapt(makeListExpenseById()))
-  router.delete('/expenses/:id', adapt(makeRemoveExpenseController()))
-  router.patch('/expenses/:id', adapt(makePaymentExpenseController()))
+  router.delete('/expenses/:id', auth, adapt(makeRemoveExpenseController()))
+  router.patch('/expenses/:id', auth, adapt(makePaymentExpenseController()))
   router.get(
-    '/expenses/wallet/:walletId',
+    '/expenses/wallet/:id',
     auth,
     adapt(makeListExpensesByWalletController())
   )
