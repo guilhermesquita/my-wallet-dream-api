@@ -2,7 +2,9 @@ import { Router } from 'express'
 import { adaptExpressRoute as adapt } from '../adapters'
 import {
   makeAddDreamController,
-  makeListDreamsByProfileIdController
+  makeEditDreamController,
+  makeListDreamsByProfileIdController,
+  makeRemoveDreamController
 } from '../factories/application/controllers'
 import { auth } from '../middlewares'
 
@@ -13,4 +15,6 @@ export default (router: Router): void => {
     auth,
     adapt(makeListDreamsByProfileIdController())
   )
+  router.put('/dreams/:id', adapt(makeEditDreamController()))
+  router.delete('/dreams/:id', adapt(makeRemoveDreamController()))
 }

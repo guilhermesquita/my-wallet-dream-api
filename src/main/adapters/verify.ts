@@ -116,7 +116,6 @@ export const validationsTokenWallet = async ({
 export const validationsTokenExpense = async ({
   id,
   tokenPayload,
-  url,
   method,
   walletId
 }: validationTokenParams): Promise<boolean> => {
