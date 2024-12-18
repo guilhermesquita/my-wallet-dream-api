@@ -5,7 +5,8 @@ import { NextFunction, Request, Response } from 'express'
 import {
   validationsTokenExpense,
   validationsTokenUser,
-  validationsTokenWallet
+  validationsTokenWallet,
+  validationTokenDream
 } from '../adapters'
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -19,7 +20,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
   const routeValidations: Record<string, (args: any) => Promise<boolean>> = {
     '/api/users': validationsTokenUser,
     '/api/wallets': validationsTokenWallet,
-    '/api/expenses': validationsTokenExpense
+    '/api/expenses': validationsTokenExpense,
+    '/api/dreams': validationTokenDream
   }
 
   const matchingRoute = Object.keys(routeValidations).find(route =>

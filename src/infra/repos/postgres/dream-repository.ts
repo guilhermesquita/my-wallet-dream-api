@@ -1,6 +1,7 @@
 import {
   AddDream,
   EditDream,
+  ListDreamById,
   ListDreamsByProfileId,
   RemoveDream
 } from '@/domain/contracts/repos'
@@ -11,7 +12,12 @@ import { RedisService } from '@/main/config/redis'
 import { Dream } from '@/domain/entities'
 
 export class DreamRepository
-  implements AddDream, ListDreamsByProfileId, EditDream, RemoveDream
+  implements
+    AddDream,
+    ListDreamsByProfileId,
+    EditDream,
+    RemoveDream,
+    ListDreamById
 {
   async add(dream: AddDream.params): Promise<AddDream.result> {
     const pgDreamRepo = new PgDream()
@@ -123,5 +129,22 @@ export class DreamRepository
       statusCode: 201,
       message: 'Dream removido com sucesso'
     }
+  }
+
+  async listById(idUser: string): Promise<ListDreamById.Result> {
+    const pgDreamRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgDream)
+
+    const dream = (await pgDreamRepo.findOne({
+      where: {
+        id_dream: idUser
+      },
+      relations: {
+        fk_profile: true
+      }
+    })) as Dream
+
+    return dream
   }
 }

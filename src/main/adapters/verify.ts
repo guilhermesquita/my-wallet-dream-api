@@ -1,6 +1,11 @@
-import { PgUserRepository, PgWalletRepository } from '@/infra/repos/postgres'
+import {
+  DreamRepository,
+  PgUserRepository,
+  PgWalletRepository
+} from '@/infra/repos/postgres'
 import { RedisService } from '../config/redis'
 import {
+  DbListDreamById,
   DbListUserById,
   DbListWalletByExpense,
   DbListWalletById
@@ -12,6 +17,7 @@ const pgWalletRepository = new PgWalletRepository(new RedisService())
 const dbListUserById = new DbListUserById(pgUserRepository, pgUserRepository)
 const dbListWalletById = new DbListWalletById(pgWalletRepository)
 const dbListWalletByExpense = new DbListWalletByExpense(pgWalletRepository)
+const dbListDreamById = new DbListDreamById(new DreamRepository())
 
 interface validationTokenParams {
   id: string | number
@@ -40,6 +46,12 @@ export const verifyOwnerWallet = async (id: number) => {
 export const verifyWalletExpense = async (id: string) => {
   const wallet = await dbListWalletByExpense.listByExpense(id)
   return wallet
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const getDreamById = async (id: string) => {
+  const user = await dbListDreamById.listById(id)
+  return user
 }
 
 export const validationsTokenUser = async ({
@@ -135,6 +147,35 @@ export const validationsTokenExpense = async ({
       break
     default:
       if (tokenPayload !== wallet.fk_profile.id_profile) {
+        valid = false
+      }
+      break
+  }
+
+  return valid
+}
+
+export const validationTokenDream = async ({
+  tokenPayload,
+  id,
+  method,
+  profileId
+}: validationTokenParams): Promise<boolean> => {
+  let valid = true
+
+  const dream = await getDreamById(id as string)
+
+  switch (method) {
+    case 'POST':
+      if (tokenPayload !== profileId) {
+        valid = false
+      }
+      break
+    case 'GET':
+      valid = true
+      break
+    default:
+      if (tokenPayload !== dream.fk_profile.id_profile) {
         valid = false
       }
       break

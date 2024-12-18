@@ -15,6 +15,6 @@ export default (router: Router): void => {
     auth,
     adapt(makeListDreamsByProfileIdController())
   )
-  router.put('/dreams/:id', adapt(makeEditDreamController()))
-  router.delete('/dreams/:id', adapt(makeRemoveDreamController()))
+  router.put('/dreams/:id', auth, adapt(makeEditDreamController()))
+  router.delete('/dreams/:id', auth, adapt(makeRemoveDreamController()))
 }
