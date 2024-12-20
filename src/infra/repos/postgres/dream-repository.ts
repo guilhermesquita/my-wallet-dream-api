@@ -1,5 +1,6 @@
 import {
   AddDream,
+  CheckDreamById,
   EditDream,
   FinishedDream,
   ListDreamById,
@@ -20,7 +21,8 @@ export class DreamRepository
     EditDream,
     RemoveDream,
     ListDreamById,
-    FinishedDream
+    FinishedDream,
+    CheckDreamById
 {
   async add(dream: AddDream.params): Promise<AddDream.result> {
     const pgDreamRepo = new PgDream()
@@ -180,5 +182,22 @@ export class DreamRepository
       statusCode: 200,
       message: 'Dream finalizado com sucesso!'
     }
+  }
+
+  async CheckById(id: string): Promise<CheckDreamById.Result> {
+    const pgDreamRepository = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgDream)
+
+    const dream = await pgDreamRepository.findOne({
+      where: {
+        id_dream: id
+      }
+    })
+
+    let result: boolean = false
+    dream && (result = true)
+
+    return result
   }
 }

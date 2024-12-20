@@ -1,10 +1,4 @@
-import {
-  badRequest,
-  conflict,
-  created,
-  notAcceptable,
-  serverError
-} from '../helpers'
+import { badRequest, created, notAcceptable, serverError } from '../helpers'
 import { Controller, HttpResponse, Validation } from '../contracts'
 import { EditDream } from '@/domain/contracts/repos'
 
@@ -29,12 +23,9 @@ export class EditDreamController implements Controller {
         value
       })
 
-      if ('statusCode' in result && result.statusCode === 406) {
-        return notAcceptable('Carteira não encontrada')
-      }
-
-      if ('statusCode' in result && result.statusCode === 409) {
-        return conflict('Carteira com nome')
+      if (result.statusCode === 406) {
+        const message = result as HttpResponse
+        return notAcceptable(message.body)
       }
 
       return created(result)

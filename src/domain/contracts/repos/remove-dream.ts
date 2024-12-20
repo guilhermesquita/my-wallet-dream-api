@@ -1,5 +1,7 @@
+import { HttpResponse } from '@/application/contracts'
+
 export interface RemoveDream {
-  remove: (id: string) => Promise<RemoveDream.Result>
+  remove: (id: string) => Promise<RemoveDream.Result | HttpResponse>
 }
 
 export namespace RemoveDream {

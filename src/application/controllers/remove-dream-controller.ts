@@ -1,4 +1,4 @@
-import { conflict, created, notAcceptable, serverError } from '../helpers'
+import { created, notAcceptable, serverError } from '../helpers'
 import { Controller, HttpResponse } from '../contracts'
 import { RemoveDream } from '@/domain/contracts/repos'
 
@@ -13,11 +13,6 @@ export class RemoveDreamController implements Controller {
       if (result.statusCode === 406) {
         const message = result as HttpResponse
         return notAcceptable(message.body)
-      }
-
-      if (result.statusCode === 409) {
-        const message = result as HttpResponse
-        return conflict(message.body)
       }
 
       return created(result)

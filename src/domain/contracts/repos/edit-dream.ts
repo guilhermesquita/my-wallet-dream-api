@@ -1,5 +1,7 @@
+import { HttpResponse } from '@/application/contracts'
+
 export interface EditDream {
-  edit: (params: EditDream.Params) => Promise<EditDream.Result>
+  edit: (params: EditDream.Params) => Promise<EditDream.Result | HttpResponse>
 }
 
 export namespace EditDream {
