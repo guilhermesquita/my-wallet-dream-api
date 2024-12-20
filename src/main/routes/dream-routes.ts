@@ -10,7 +10,7 @@ import {
 import { auth } from '../middlewares'
 
 export default (router: Router): void => {
-  router.post('/dreams', adapt(makeAddDreamController()))
+  router.post('/dreams', auth, adapt(makeAddDreamController()))
   router.get(
     '/dreams/profile/:id',
     auth,
