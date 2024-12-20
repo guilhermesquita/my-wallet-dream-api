@@ -1,6 +1,7 @@
 import {
   AddDream,
   EditDream,
+  FinishedDream,
   ListDreamById,
   ListDreamsByProfileId,
   RemoveDream
@@ -10,6 +11,7 @@ import { UuidGenerator } from '@/infra/gateways'
 import { PgConnection } from './helpers'
 import { RedisService } from '@/main/config/redis'
 import { Dream } from '@/domain/entities'
+import { HttpResponse } from '@/application/contracts'
 
 export class DreamRepository
   implements
@@ -17,7 +19,8 @@ export class DreamRepository
     ListDreamsByProfileId,
     EditDream,
     RemoveDream,
-    ListDreamById
+    ListDreamById,
+    FinishedDream
 {
   async add(dream: AddDream.params): Promise<AddDream.result> {
     const pgDreamRepo = new PgDream()
@@ -146,5 +149,36 @@ export class DreamRepository
     })) as Dream
 
     return dream
+  }
+
+  async finished(id: string): Promise<FinishedDream.Result | HttpResponse> {
+    const pgDreamRepository = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgDream)
+
+    const dream = (await pgDreamRepository.findOne({
+      where: {
+        id_dream: id
+      }
+    })) as PgDream
+
+    dream.is_finished_dream = true
+
+    const entityManager = PgConnection.getInstance()
+      .connect()
+      .createEntityManager()
+
+    await entityManager.transaction(async manager => {
+      await manager.save(PgDream, dream)
+    })
+
+    const redisService = new RedisService()
+    await redisService.del('expenses')
+
+    return {
+      id: dream.id_dream,
+      statusCode: 200,
+      message: 'Dream finalizado com sucesso!'
+    }
   }
 }
