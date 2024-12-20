@@ -6,6 +6,7 @@ import {
 import { RedisService } from '../config/redis'
 import {
   DbListDreamById,
+  DbListUserByEmail,
   DbListUserById,
   DbListWalletByExpense,
   DbListWalletById
@@ -19,12 +20,15 @@ const dbListWalletById = new DbListWalletById(pgWalletRepository)
 const dbListWalletByExpense = new DbListWalletByExpense(pgWalletRepository)
 const dbListDreamById = new DbListDreamById(new DreamRepository())
 
+const dbListUserByEmail = new DbListUserByEmail(pgUserRepository)
+
 interface validationTokenParams {
   id: string | number
   url: string
   method: string
   tokenPayload: string
   profileId?: string
+  email?: string
   walletId?: number
 }
 
@@ -32,6 +36,14 @@ interface validationTokenParams {
 export const getUserByToken = async (id: string) => {
   const user = await dbListUserById.ListById({
     id
+  })
+  return user
+}
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export const getUserByEmail = async (email: string) => {
+  const user = await dbListUserByEmail.ListByEmail({
+    email
   })
   return user
 }
@@ -58,22 +70,30 @@ export const validationsTokenUser = async ({
   id,
   tokenPayload,
   url,
-  method
+  method,
+  email
 }: validationTokenParams): Promise<boolean> => {
   let valid = true
-  if (url.includes('/api/users/')) {
-    switch (method) {
-      case 'PUT':
-        if (tokenPayload !== id) {
-          valid = false
-        }
-        break
-      case 'PATCH':
-        if (tokenPayload !== id) {
-          valid = false
-        }
-        break
+
+  if (url.includes('/api/users/reset-password')) {
+    const user = await getUserByEmail(email as string)
+    if (tokenPayload !== user.id_user) {
+      valid = false
     }
+    return valid
+  }
+
+  switch (method) {
+    case 'PUT':
+      if (tokenPayload !== id) {
+        valid = false
+      }
+      break
+    case 'PATCH':
+      if (tokenPayload !== id) {
+        valid = false
+      }
+      break
   }
 
   if (url.includes('/api/users/upload')) {

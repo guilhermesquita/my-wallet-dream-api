@@ -43,7 +43,8 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
         id: req.params.id,
         tokenPayload,
         profileId: req.body.owner,
-        walletId: req.body.fk_wallet
+        walletId: req.body.fk_wallet,
+        email: req.params.email
       })
 
       if (!isValid) {

@@ -1,13 +1,14 @@
-// import { HttpResponse } from "@/application/contracts"
-// import { User } from "@/domain/entities"
+import { User } from '@/domain/entities'
 
-// export interface ListUserByEmail{
-//     ListByEmail: (email: ListUserByEmail.Params) => Promise<ListUserByEmail.Result>
-// }
+export interface ListUserByEmail {
+  ListByEmail: (
+    email: ListUserByEmail.Params
+  ) => Promise<ListUserByEmail.Result>
+}
 
-// export namespace ListUserByEmail{
-//     export type Params = {
-//         email: string
-//     }
-//     export type Result =  User | HttpResponse
-// }
+export namespace ListUserByEmail {
+  export type Params = {
+    email: string
+  }
+  export type Result = User
+}

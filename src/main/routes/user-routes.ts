@@ -31,6 +31,7 @@ export default (router: Router): void => {
   router.put('/users/:id', auth, adapt(makeEditUserController()))
   router.patch(
     '/users/reset-password/:email',
+    auth,
     adapt(makeResetUserPasswordController())
   )
 }

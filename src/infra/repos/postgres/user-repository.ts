@@ -10,7 +10,8 @@ import {
   ListUserById,
   EditUser,
   CheckUserById,
-  ResetUserPassword
+  ResetUserPassword,
+  ListUserByEmail
 } from '@/domain/contracts/repos'
 import { PgProfile, PgUser } from './entities'
 import { JwtTokenHandler, UuidGenerator } from '@/infra/gateways'
@@ -35,7 +36,8 @@ export class PgUserRepository
     ListUserById,
     EditUser,
     CheckUserById,
-    ResetUserPassword
+    ResetUserPassword,
+    ListUserByEmail
 {
   constructor(private readonly redisService: RedisService) {}
   async add(user: AddUser.Params): Promise<AddUser.Result> {
@@ -419,5 +421,21 @@ export class PgUserRepository
       statusCode: 200,
       message: 'Senha resetada com sucesso'
     }
+  }
+
+  async ListByEmail(
+    email: ListUserByEmail.Params
+  ): Promise<ListUserByEmail.Result> {
+    const pgUserRepo = PgConnection.getInstance()
+      .connect()
+      .getRepository(PgUser)
+
+    const user = (await pgUserRepo.findOne({
+      where: {
+        email_user: email.email
+      }
+    })) as PgUser
+
+    return user
   }
 }
